@@ -3,8 +3,8 @@
 # gst1-plugins-bad
 #
 ################################################################################
-
-GST1_PLUGINS_BAD_VERSION = 1.22.9
+# batocera - bump
+GST1_PLUGINS_BAD_VERSION = 1.24.6
 GST1_PLUGINS_BAD_SOURCE = gst-plugins-bad-$(GST1_PLUGINS_BAD_VERSION).tar.xz
 GST1_PLUGINS_BAD_SITE = https://gstreamer.freedesktop.org/src/gst-plugins-bad
 GST1_PLUGINS_BAD_INSTALL_STAGING = YES
@@ -49,7 +49,6 @@ GST1_PLUGINS_BAD_CONF_OPTS += \
 	-Dflite=disabled \
 	-Dgs=disabled \
 	-Dgsm=disabled \
-	-Dkate=disabled \
 	-Dladspa=disabled \
 	-Dldac=disabled \
 	-Dlv2=disabled \
@@ -103,6 +102,22 @@ GST1_PLUGINS_BAD_DEPENDENCIES += bluez5_utils
 GST1_PLUGINS_BAD_CONF_OPTS += -Dbluez=enabled
 else
 GST1_PLUGINS_BAD_CONF_OPTS += -Dbluez=disabled
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_LIBFREEAPTX),y)
+GST1_PLUGINS_BAD_DEPENDENCIES += libfreeaptx
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_LIBLDAC),y)
+GST1_PLUGINS_BAD_DEPENDENCIES += libldac
+GST1_PLUGINS_BAD_CONF_OPTS += -Dldac=enabled
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_LIBLC3),y)
+GST1_PLUGINS_BAD_DEPENDENCIES += liblc3
 endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_ACCURIP),y)

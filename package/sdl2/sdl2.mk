@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SDL2_VERSION = 2.28.5
+SDL2_VERSION = 2.30.6
 SDL2_SOURCE = SDL2-$(SDL2_VERSION).tar.gz
 SDL2_SITE = http://www.libsdl.org/release
 SDL2_LICENSE = Zlib
@@ -88,6 +88,11 @@ endif
 # batocera - use Pipewire audio
 ifeq ($(BR2_PACKAGE_PIPEWIRE),y)
 SDL2_CONF_OPTS += --enable-pipewire
+endif
+
+# batocera - ensure mesa for riscv is built before sdl2
+ifeq ($(BR2_PACKAGE_IMG_MESA3D),y)
+SDL2_DEPENDENCIES += img-mesa3d
 endif
 
 ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)

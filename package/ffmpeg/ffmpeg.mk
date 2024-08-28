@@ -3,8 +3,9 @@
 # ffmpeg
 #
 ################################################################################
-
-FFMPEG_VERSION = 4.4.4
+# batocera - upgrade to v7 (removed patches) so most packages use this version
+# buildroot 4.4.x moved to a batocera package
+FFMPEG_VERSION = 7.0.2
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
 FFMPEG_SITE = https://ffmpeg.org/releases
 FFMPEG_INSTALL_STAGING = YES
@@ -32,11 +33,6 @@ FFMPEG_CONF_OPTS = \
 	--disable-gray \
 	--enable-swscale-alpha \
 	--disable-small \
-	--enable-dct \
-	--enable-fft \
-	--enable-mdct \
-	--enable-rdft \
-	--disable-crystalhd \
 	--disable-dxva2 \
 	--enable-runtime-cpudetect \
 	--disable-hardcoded-tables \
@@ -57,6 +53,12 @@ FFMPEG_CONF_OPTS = \
 	--disable-libvo-amrwbenc \
 	--disable-symver \
 	--disable-doc
+
+# batocera - add pulse audio support for batocera-record
+ifeq ($(BR2_PACKAGE_PULSEAUDIO),y)
+FFMPEG_CONF_OPTS += --enable-libpulse
+FFMPEG_DEPENDENCIES += pulseaudio
+endif
 
 FFMPEG_DEPENDENCIES += host-pkgconf
 
@@ -91,12 +93,6 @@ FFMPEG_DEPENDENCIES += libv4l
 FFMPEG_CONF_OPTS += --enable-libv4l2
 else
 FFMPEG_CONF_OPTS += --disable-libv4l2
-endif
-
-ifeq ($(BR2_PACKAGE_FFMPEG_AVRESAMPLE),y)
-FFMPEG_CONF_OPTS += --enable-avresample
-else
-FFMPEG_CONF_OPTS += --disable-avresample
 endif
 
 ifeq ($(BR2_PACKAGE_FFMPEG_FFPROBE),y)
@@ -294,6 +290,16 @@ else
 FFMPEG_CONF_OPTS += --disable-mmal --disable-omx --disable-omx-rpi
 endif
 
+# batocera - add RPi H.265 hardware acceleration
+ifeq ($(BR2_PACKAGE_RPI_HEVC),y)
+FFMPEG_CONF_OPTS += --disable-mmal
+FFMPEG_CONF_OPTS += --enable-neon
+FFMPEG_CONF_OPTS += --enable-v4l2-request
+FFMPEG_CONF_OPTS += --enable-libudev
+FFMPEG_CONF_OPTS += --enable-epoxy
+FFMPEG_CONF_OPTS += --enable-sand
+endif
+
 # To avoid a circular dependency only use opencv if opencv itself does
 # not depend on ffmpeg.
 ifeq ($(BR2_PACKAGE_OPENCV3_LIB_IMGPROC)x$(BR2_PACKAGE_OPENCV3_WITH_FFMPEG),yx)
@@ -378,6 +384,12 @@ FFMPEG_CONF_OPTS += --enable-iconv
 FFMPEG_DEPENDENCIES += libiconv
 else
 FFMPEG_CONF_OPTS += --disable-iconv
+endif
+
+# batocera - add cuda
+ifeq ($(BR2_PACKAGE_NVIDIA_OPEN_DRIVER_CUDA),y)
+FFMPEG_CONF_OPTS += --enable-cuda
+FFMPEG_DEPENDENCIES += nv-codec-headers
 endif
 
 # ffmpeg freetype support require fenv.h which is only
@@ -503,6 +515,14 @@ else ifeq ($(BR2_aarch64),y)
 FFMPEG_CONF_OPTS += --enable-neon
 else
 FFMPEG_CONF_OPTS += --disable-neon
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_VULKAN_HEADERS)$(BR2_PACKAGE_VULKAN_LOADER)$(BR2_PACKAGE_SHADERC),yyy)
+FFMPEG_CONF_OPTS += --enable-vulkan --enable-libshaderc
+FFMPEG_DEPENDENCIES += vulkan-headers vulkan-loader shaderc
+else
+FFMPEG_CONF_OPTS += --disable-vulkan
 endif
 
 ifeq ($(BR2_mips)$(BR2_mipsel)$(BR2_mips64)$(BR2_mips64el),y)

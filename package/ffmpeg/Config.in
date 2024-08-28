@@ -18,6 +18,7 @@ config BR2_PACKAGE_FFMPEG_ARCH_SUPPORTS
 menuconfig BR2_PACKAGE_FFMPEG
 	bool "ffmpeg"
 	depends on BR2_PACKAGE_FFMPEG_ARCH_SUPPORTS
+	select BR2_PACKAGE_NV_CODEC_HEADERS    if BR2_PACKAGE_NVIDIA_OPEN_DRIVER_CUDA # batocera
 	help
 	  FFmpeg is a complete, cross-platform solution to record,
 	  convert and stream audio and video.
@@ -73,11 +74,6 @@ config BR2_PACKAGE_FFMPEG_XCBGRAB
 	select BR2_PACKAGE_LIBXCB
 	help
 	  X11 screen grabbing using libxcb.
-
-config BR2_PACKAGE_FFMPEG_AVRESAMPLE
-	bool "Build libavresample"
-	help
-	  Avresample is a audio conversion library for compatibility.
 
 config BR2_PACKAGE_FFMPEG_POSTPROC
 	bool "Build libpostproc"
@@ -184,5 +180,11 @@ config BR2_PACKAGE_FFMPEG_EXTRACONF
 	help
 	  Extra parameters that will be appended to FFmpeg's
 	  ./configure commandline.
+
+# batocera - RPI option
+config BR2_PACKAGE_RPI_HEVC
+	bool "Enable RPi H.265 hwaccel"
+	help
+	  Allows for H.265 hardware acceleration for supported Raspberry Pi boards.
 
 endif

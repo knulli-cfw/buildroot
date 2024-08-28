@@ -8,10 +8,14 @@
 # also update glslang to the latest stable version
 
 # RPi4/Panfrost workaround until - https://gitlab.freedesktop.org/mesa/mesa/-/issues/10306 fixed
-ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711)$(BR2_PACKAGE_BATOCERA_PANFROST_MESA3D),y)
+ifneq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_ANY)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712),y)
     MESA3D_VERSION = 23.2.1
+    GLVND_TRUE = true
+    GLVND_FALSE = false
 else
-    MESA3D_VERSION = 24.0.4
+    MESA3D_VERSION = 24.1.6
+    GLVND_TRUE = enabled
+    GLVND_FALSE = disabled
 endif
 
 MESA3D_SOURCE = mesa-$(MESA3D_VERSION).tar.xz
@@ -49,12 +53,11 @@ else
 MESA3D_CONF_OPTS += -Ddri3=disabled
 endif
 
-# batocera - adjust the llvm dependencies
 ifeq ($(BR2_PACKAGE_MESA3D_LLVM),y)
-MESA3D_DEPENDENCIES += host-batocera-llvm batocera-llvm
+MESA3D_DEPENDENCIES += host-llvm llvm
 MESA3D_MESON_EXTRA_BINARIES += llvm-config='$(STAGING_DIR)/usr/bin/llvm-config'
 MESA3D_CONF_OPTS += -Dllvm=enabled
-ifeq ($(BR2_PACKAGE_BATOCERA_LLVM_RTTI),y)
+ifeq ($(BR2_PACKAGE_LLVM_RTTI),y)
 MESA3D_CONF_OPTS += -Dcpp_rtti=true
 else
 MESA3D_CONF_OPTS += -Dcpp_rtti=false
@@ -153,11 +156,6 @@ MESA3D_DEPENDENCIES += python3 host-glslang
 MESA3D_CONF_OPTS += -Dvulkan-layers=device-select,overlay
 endif
 
-# batocera - add Xe (Tigerlake and newer platforms)
-ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS),y)
-MESA3D_CONF_OPTS += -Dintel-xe-kmd=enabled
-endif
-
 ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER),)
 MESA3D_CONF_OPTS += \
 	-Dgallium-drivers= \
@@ -167,6 +165,13 @@ MESA3D_CONF_OPTS += \
 	-Dshared-glapi=enabled \
 	-Dgallium-drivers=$(subst $(space),$(comma),$(MESA3D_GALLIUM_DRIVERS-y)) \
 	-Dgallium-extra-hud=true
+endif
+
+# batocera - intel ray tracing
+ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_INTEL),y)
+    MESA3D_DEPENDENCIES += host-intel-clc host-python-ply
+    MESA3D_CONF_OPTS += -Dintel-clc=system
+    MESA3D_MESON_EXTRA_BINARIES += intel_clc='$(HOST_DIR)/usr/bin/intel_clc'
 endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER),)
@@ -339,14 +344,14 @@ MESA3D_CFLAGS += -mlong-jump-table-offsets
 endif
 
 ifeq ($(BR2_PACKAGE_LIBGLVND),y)
-ifneq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX)$(BR2_PACKAGE_MESA3D_OPENGL_EGL),)
-MESA3D_DEPENDENCIES += libglvnd
-MESA3D_CONF_OPTS += -Dglvnd=true
+    ifneq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX)$(BR2_PACKAGE_MESA3D_OPENGL_EGL),)
+        MESA3D_DEPENDENCIES += libglvnd
+        MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_TRUE)
+    else
+        MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_FALSE)
+    endif
 else
-MESA3D_CONF_OPTS += -Dglvnd=false
-endif
-else
-MESA3D_CONF_OPTS += -Dglvnd=false
+    MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_FALSE)
 endif
 
 $(eval $(meson-package))
