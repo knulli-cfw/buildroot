@@ -3,8 +3,8 @@
 # swaybg
 #
 ################################################################################
-
-SWAYBG_VERSION = 1.2.0
+# batocera - upgrade
+SWAYBG_VERSION = 1.2.1
 SWAYBG_SITE = https://github.com/swaywm/swaybg/releases/download/v$(SWAYBG_VERSION)
 SWAYBG_LICENSE = MIT
 SWAYBG_LICENSE_FILES = LICENSE
