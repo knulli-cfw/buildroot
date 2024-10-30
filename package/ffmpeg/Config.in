@@ -20,6 +20,7 @@ menuconfig BR2_PACKAGE_FFMPEG
 	depends on BR2_PACKAGE_FFMPEG_ARCH_SUPPORTS
 	depends on BR2_TOOLCHAIN_HAS_THREADS
 	select BR2_PACKAGE_NV_CODEC_HEADERS    if BR2_PACKAGE_NVIDIA_OPEN_DRIVER_CUDA # batocera
+	select BR2_PACKAGE_LIBXML2 # batocera
 	help
 	  FFmpeg is a complete, cross-platform solution to record,
 	  convert and stream audio and video.
