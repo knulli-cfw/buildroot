@@ -63,6 +63,7 @@ endif
 # batocera - force dash demuxer & libxml2 for Kodi
 FFMPEG_CONF_OPTS += --enable-demuxer=dash
 FFMPEG_CONF_OPTS += --enable-libxml2
+FFMPEG_DEPENDENCIES += libxml2
 
 FFMPEG_DEPENDENCIES += host-pkgconf
 
