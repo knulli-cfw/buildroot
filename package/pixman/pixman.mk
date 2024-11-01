@@ -3,8 +3,8 @@
 # pixman
 #
 ################################################################################
-
-PIXMAN_VERSION = 0.42.2
+# batocera - bump (move to meson)
+PIXMAN_VERSION = 0.43.4
 PIXMAN_SOURCE = pixman-$(PIXMAN_VERSION).tar.xz
 PIXMAN_SITE = https://xorg.freedesktop.org/releases/individual/lib
 PIXMAN_LICENSE = MIT
@@ -15,21 +15,13 @@ PIXMAN_INSTALL_STAGING = YES
 PIXMAN_DEPENDENCIES = host-pkgconf
 HOST_PIXMAN_DEPENDENCIES = host-pkgconf
 
-# For 0001-Disable-tests.patch
-PIXMAN_AUTORECONF = YES
-
 # don't build gtk based demos
 PIXMAN_CONF_OPTS = \
-	--disable-gtk \
-	--disable-loongson-mmi \
-	--disable-arm-iwmmxt
-
-# Affects only tests, and we don't build tests (see
-# 0001-Disable-tests.patch). See
-# https://gitlab.freedesktop.org/pixman/pixman/-/issues/76, which says
-# "not sure why NVD keeps assigning CVEs like this. This is just a
-# test executable".
-PIXMAN_IGNORE_CVES += CVE-2023-37769
+	-Dgtk=disabled \
+	-Dloongson-mmi=disabled \
+	-Diwmmxt=disabled \
+	-Dtests=disabled \
+	-Ddemos=disabled
 
 # The ARM SIMD code from pixman requires a recent enough ARM core, but
 # there is a runtime CPU check that makes sure it doesn't get used if
@@ -37,24 +29,22 @@ PIXMAN_IGNORE_CVES += CVE-2023-37769
 # cannot be *built* at all is when the platform doesn't support ARM
 # instructions at all, so we have to disable that explicitly.
 ifeq ($(BR2_ARM_CPU_HAS_ARM),y)
-PIXMAN_CONF_OPTS += --enable-arm-simd
+PIXMAN_CONF_OPTS += -Darm-simd=enabled
 else
-PIXMAN_CONF_OPTS += --disable-arm-simd
+PIXMAN_CONF_OPTS += -Darm-simd=disabled
 endif
 
 ifeq ($(BR2_ARM_CPU_HAS_ARM)$(BR2_ARM_CPU_HAS_NEON),yy)
-PIXMAN_CONF_OPTS += --enable-arm-neon
+PIXMAN_CONF_OPTS += -Dneon=enabled
 else
-PIXMAN_CONF_OPTS += --disable-arm-neon
+PIXMAN_CONF_OPTS += -Dneon=disabled
 endif
 
-PIXMAN_CFLAGS = $(TARGET_CFLAGS)
-
-ifeq ($(BR2_TOOLCHAIN_HAS_GCC_BUG_101737),y)
-PIXMAN_CFLAGS += -O0
+ifeq ($(BR2_ARM_CPU_HAS_NEON)$(BR2_aarch64),yy)
+PIXMAN_CONF_OPTS += -Da64-neon=enabled
+else
+PIXMAN_CONF_OPTS += -Da64-neon=disabled
 endif
 
-PIXMAN_CONF_OPTS += CFLAGS="$(PIXMAN_CFLAGS)"
-
-$(eval $(autotools-package))
-$(eval $(host-autotools-package))
+$(eval $(meson-package))
+$(eval $(host-meson-package))
