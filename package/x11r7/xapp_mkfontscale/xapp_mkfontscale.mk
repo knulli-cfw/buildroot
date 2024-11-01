@@ -3,8 +3,8 @@
 # xapp_mkfontscale
 #
 ################################################################################
-
-XAPP_MKFONTSCALE_VERSION = 1.2.2
+# batocera - bump
+XAPP_MKFONTSCALE_VERSION = 1.2.3
 XAPP_MKFONTSCALE_SOURCE = mkfontscale-$(XAPP_MKFONTSCALE_VERSION).tar.xz
 XAPP_MKFONTSCALE_SITE = http://xorg.freedesktop.org/releases/individual/app
 XAPP_MKFONTSCALE_LICENSE = MIT

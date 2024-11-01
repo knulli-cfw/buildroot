@@ -3,8 +3,8 @@
 # xlib_libXtst
 #
 ################################################################################
-
-XLIB_LIBXTST_VERSION = 1.2.4
+# batocera - bump
+XLIB_LIBXTST_VERSION = 1.2.5
 XLIB_LIBXTST_SOURCE = libXtst-$(XLIB_LIBXTST_VERSION).tar.xz
 XLIB_LIBXTST_SITE = https://xorg.freedesktop.org/archive/individual/lib
 XLIB_LIBXTST_LICENSE = MIT
