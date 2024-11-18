@@ -16,6 +16,8 @@ FLUID_SOUNDFONT_LICENSE_FILES = COPYING
 
 define FLUID_SOUNDFONT_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0644 $(@D)/FluidR3_GM.sf2 $(TARGET_DIR)/usr/share/soundfonts/FluidR3_GM.sf2
+	# batocera install here too as per the deb file (required by Taradino)
+	$(INSTALL) -D -m 0644 $(@D)/FluidR3_GM.sf2 $(TARGET_DIR)/usr/share/sounds/sf2/FluidR3_GM.sf2
 endef
 
 $(eval $(generic-package))
