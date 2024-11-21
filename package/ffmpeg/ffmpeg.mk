@@ -3,9 +3,14 @@
 # ffmpeg
 #
 ################################################################################
-# batocera - upgrade to v7 (removed patches) so most packages use this version
+# batocera - upgrade to v7.1 (removed patches) so most packages use this version
+# maintain 7.0.2 for RPi 4/5 & RK3588 boards for hwaccel support
 # buildroot 4.4.x moved to a batocera package
-FFMPEG_VERSION = 7.0.2
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
+    FFMPEG_VERSION = 7.0.2
+else
+    FFMPEG_VERSION = 7.1
+endif
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
 FFMPEG_SITE = https://ffmpeg.org/releases
 FFMPEG_INSTALL_STAGING = YES
@@ -59,6 +64,11 @@ ifeq ($(BR2_PACKAGE_PULSEAUDIO),y)
 FFMPEG_CONF_OPTS += --enable-libpulse
 FFMPEG_DEPENDENCIES += pulseaudio
 endif
+
+# batocera - force dash demuxer & libxml2 for Kodi
+FFMPEG_CONF_OPTS += --enable-demuxer=dash
+FFMPEG_CONF_OPTS += --enable-libxml2
+FFMPEG_DEPENDENCIES += libxml2
 
 FFMPEG_DEPENDENCIES += host-pkgconf
 
@@ -337,11 +347,14 @@ else
 FFMPEG_CONF_OPTS += --disable-libbluray
 endif
 
-ifeq ($(BR2_PACKAGE_INTEL_MEDIASDK),y)
-FFMPEG_CONF_OPTS += --enable-libmfx
+ifeq ($(BR2_PACKAGE_LIBVPL),y)
+FFMPEG_CONF_OPTS += --enable-libvpl --disable-libmfx
+FFMPEG_DEPENDENCIES += libvpl
+else ifeq ($(BR2_PACKAGE_INTEL_MEDIASDK),y)
+FFMPEG_CONF_OPTS += --disable-libvpl --enable-libmfx
 FFMPEG_DEPENDENCIES += intel-mediasdk
 else
-FFMPEG_CONF_OPTS += --disable-libmfx
+FFMPEG_CONF_OPTS += --disable-libvpl --disable-libmfx
 endif
 
 ifeq ($(BR2_PACKAGE_RTMPDUMP),y)
@@ -386,9 +399,9 @@ else
 FFMPEG_CONF_OPTS += --disable-iconv
 endif
 
-# batocera - add cuda
+# batocera - add cuda & nvenc
 ifeq ($(BR2_PACKAGE_NVIDIA_OPEN_DRIVER_CUDA),y)
-FFMPEG_CONF_OPTS += --enable-cuda
+FFMPEG_CONF_OPTS += --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc
 FFMPEG_DEPENDENCIES += nv-codec-headers
 endif
 

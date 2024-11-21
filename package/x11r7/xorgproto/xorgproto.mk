@@ -3,8 +3,8 @@
 # xorgproto
 #
 ################################################################################
-
-XORGPROTO_VERSION = 2023.2
+# batocera - upgrade
+XORGPROTO_VERSION = 2024.1
 XORGPROTO_SOURCE = xorgproto-$(XORGPROTO_VERSION).tar.xz
 XORGPROTO_SITE = https://xorg.freedesktop.org/archive/individual/proto
 XORGPROTO_LICENSE = MIT
