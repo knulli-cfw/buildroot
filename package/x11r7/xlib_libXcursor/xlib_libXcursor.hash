@@ -1,5 +1,5 @@
-# From https://lists.x.org/archives/xorg-announce/2022-April/003136.html
-sha256  46c143731610bafd2070159a844571b287ac26192537d047a39df06155492104  libXcursor-1.2.1.tar.xz
-sha512  ebb42a39855aab86d0c11fe6ad33d011cf56a6dc5c309bef643460319c03df239b7e09fe88777bb25c0e9ff8aceac6bf66e51cc04a2d5ee463b3bc3bbf1674e3  libXcursor-1.2.1.tar.xz
+# From https://lists.x.org/archives/xorg-announce/2024-March/003465.html
+sha256  53d071bd2cc56e517a30998d5e685c8a74556ddada43c6985d14da9a023a88ee  libXcursor-1.2.2.tar.xz
+sha512  6550ce1e69b35ef3356f25e31aa2779503d9cea780eff307cb646364993dfaa971304085d32677e68996bd3b8e067436c8fc89aeb4db07a12ce5bc93b735b5b0  libXcursor-1.2.2.tar.xz
 # Locally computed
 sha256  ad2e9d279088c5d612fb0e506ea8bb7d9f01b411e7f4b97b64589c3cd48a68f1  COPYING

@@ -1,6 +1,6 @@
-# From https://lists.x.org/archives/xorg-announce/2024-April/003498.html
-sha256  33ec7ff2687a59faaa52b9b09aa8caf118e7ecb6aed8953f526a625ff9f4bd90  xwayland-23.2.5.tar.xz
-sha512  8cf90d51db7c4c7e8191b5919e6529fe577bc735bb1d00fbc0139cb67ef95d30eb56c2026f3b2f639745c6a621b33bbd60f9ebabdd12175148dd192393ce1169  xwayland-23.2.5.tar.xz
+# From https://lists.x.org/archives/xorg-announce/2024-October/003532.html
+sha256  dcdb57a66cc9b124c8f936760592628ac4e744a7d7b3179aa86189ad7ea4cb10  xwayland-24.1.3.tar.xz
+sha512  7e0e11b07408f41a81bafa7bc519d02ed9bdc36e11be16abe255a7d779d04824af23d79323f1602119b046c545cdd43ea91b93e23feb0ffe411aa6989b462c1d  xwayland-24.1.3.tar.xz
 
 # Locally calculated
 sha256  4cc0447a22635c7b2f1a93fec4aa94f1970fadeb72a063de006b51cf4963a06f  COPYING
