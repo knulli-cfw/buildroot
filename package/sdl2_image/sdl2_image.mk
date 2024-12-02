@@ -27,6 +27,13 @@ SDL2_IMAGE_CONF_OPTS = \
 	--enable-xpm \
 	--enable-xv
 
+define SDL2_IMAGE_FIX_SDL2_CONFIG_CMAKE
+        $(SED) '2iget_filename_component(PACKAGE_PREFIX_DIR "$${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)\n' \
+                $(STAGING_DIR)/usr/lib/cmake/SDL2_image/sdl2_image-config.cmake
+        $(SED) 's%"/usr"%$${PACKAGE_PREFIX_DIR}%' \
+                $(STAGING_DIR)/usr/lib/cmake/SDL2_image/sdl2_image-config.cmake
+endef
+
 SDL2_IMAGE_DEPENDENCIES = sdl2 host-pkgconf
 
 ifeq ($(BR2_PACKAGE_JPEG),y)
@@ -56,5 +63,7 @@ SDL2_IMAGE_DEPENDENCIES += webp
 else
 SDL2_IMAGE_CONF_OPTS += --disable-webp
 endif
+
+SDL2_IMAGE_POST_INSTALL_STAGING_HOOKS += SDL2_IMAGE_FIX_SDL2_CONFIG_CMAKE
 
 $(eval $(autotools-package))
