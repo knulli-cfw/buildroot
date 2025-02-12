@@ -41,6 +41,9 @@ else
 NTP_CONF_OPTS += --with-hardenfile=default
 endif
 
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_A133),y)
+NTP_CONF_OPTS += --disable-linuxcaps
+else \
 ifeq ($(BR2_PACKAGE_LIBCAP),y)
 NTP_CONF_OPTS += --enable-linuxcaps
 NTP_DEPENDENCIES += libcap
