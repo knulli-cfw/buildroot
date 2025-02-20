@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBGLFW_VERSION = 3.3.8
+LIBGLFW_VERSION = 3.4
 LIBGLFW_SITE = $(call github,glfw,glfw,$(LIBGLFW_VERSION))
 LIBGLFW_INSTALL_STAGING = YES
 LIBGLFW_LICENSE = Zlib
@@ -16,8 +16,11 @@ LIBGLFW_CONF_OPTS += \
 	-DGLFW_BUILD_DOCS=OFF
 
 ifeq ($(BR2_PACKAGE_XORG7),y)
+LIBGLFW_CONF_OPTS += -DGLFW_BUILD_X11=ON
 LIBGLFW_DEPENDENCIES += xlib_libXcursor xlib_libXext \
 	xlib_libXi xlib_libXinerama xlib_libXrandr
+else
+LIBGLFW_CONF_OPTS += -DGLFW_BUILD_X11=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_HAS_LIBGL),y)
@@ -28,15 +31,16 @@ ifeq ($(BR2_PACKAGE_HAS_LIBGLES),y)
 LIBGLFW_DEPENDENCIES += libgles
 endif
 
-# batocera - don't add wayland for x86
+# batocera - don't add wayland for xorg
 ifeq ($(BR2_PACKAGE_WAYLAND),y)
     ifneq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY)$(BR2_PACKAGE_BATOCERA_XWAYLAND),y)
-	    LIBGLFW_DEPENDENCIES += libxkbcommon wayland wayland-protocols
-		# Override pkg-config pkgdatadir variable, it needs the prefix
-		LIBGLFW_CONF_OPTS += \
-		    -DGLFW_USE_WAYLAND=1 \
-			-DWAYLAND_PROTOCOLS_BASE=$(STAGING_DIR)/usr/share/wayland-protocols
+        LIBGLFW_DEPENDENCIES += libxkbcommon wayland
+        LIBGLFW_CONF_OPTS += -DGLFW_BUILD_WAYLAND=ON
+    else
+        LIBGLFW_CONF_OPTS += -DGLFW_BUILD_WAYLAND=OFF
 	endif
+else
+LIBGLFW_CONF_OPTS += -DGLFW_BUILD_WAYLAND=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_XLIB_LIBXXF86VM),y)

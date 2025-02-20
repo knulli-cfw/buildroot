@@ -11,7 +11,9 @@ XWAYLAND_LICENSE = MIT
 XWAYLAND_LICENSE_FILES = COPYING
 XWAYLAND_CPE_ID_VENDOR = x.org
 XWAYLAND_INSTALL_STAGING = YES
+# batocera - add mesa3d
 XWAYLAND_DEPENDENCIES = \
+    mesa3d \
 	libdrm \
 	pixman \
 	wayland \

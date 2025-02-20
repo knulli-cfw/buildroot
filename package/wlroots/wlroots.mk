@@ -3,7 +3,7 @@
 # wlroots
 #
 ################################################################################
-# batocera (update)
+# batocera (update) - remove 0001 patch
 WLROOTS_VERSION = 0.17.3
 WLROOTS_SITE = https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/$(WLROOTS_VERSION)/downloads
 WLROOTS_LICENSE = MIT

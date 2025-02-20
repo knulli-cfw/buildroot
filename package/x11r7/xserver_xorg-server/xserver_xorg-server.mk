@@ -41,6 +41,11 @@ XSERVER_XORG_SERVER_DEPENDENCIES = \
 	mcookie \
 	host-pkgconf
 
+# batocera - needed for PARALLEL_BUILD
+ifeq ($(BR2_PACKAGE_MESA3D),y)
+XSERVER_XORG_SERVER_DEPENDENCIES += mesa3d
+endif
+
 # We force -O2 regardless of the optimization level chosen by the
 # user, as the X.org server is known to trigger some compiler bugs at
 # -Os on several architectures.

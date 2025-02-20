@@ -7,12 +7,13 @@
 test -r /etc/default/dropbear && . /etc/default/dropbear
 
 start() {
-        # batocera
-        enabled="$(/usr/bin/batocera-settings-get system.ssh.enabled)"
-        if [ "$enabled" = "0" ]; then
-          echo "SSH services: disabled"
-          exit 0
-        fi
+
+	# batocera
+	enabled="$(/usr/bin/batocera-settings-get system.ssh.enabled)"
+	if [ "$enabled" = "0" ]; then
+	    echo "SSH services: disabled"
+		exit 0
+	fi
 
 	DROPBEAR_ARGS="$DROPBEAR_ARGS -R"
 
@@ -40,11 +41,15 @@ start() {
 		--exec /usr/sbin/dropbear -- $DROPBEAR_ARGS
 	[ $? = 0 ] && echo "OK" || echo "FAIL"
 }
+
 stop() {
 	printf "Stopping dropbear sshd: "
 	start-stop-daemon -K -q -p /var/run/dropbear.pid
+	# batocera - force kill
+	pkill -f /usr/sbin/dropbear
 	[ $? = 0 ] && echo "OK" || echo "FAIL"
 }
+
 restart() {
 	stop
 	start

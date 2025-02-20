@@ -59,6 +59,7 @@ INFLATE.tbz  = $(BZCAT)
 INFLATE.tbz2 = $(BZCAT)
 INFLATE.tgz  = $(ZCAT)
 INFLATE.xz   = $(XZCAT)
+INFLATE.zst  = $(ZSTDCAT)
 INFLATE.tar  = cat
 # suitable-extractor(filename): returns extractor based on suffix
 suitable-extractor = $(INFLATE$(suffix $(1)))
@@ -66,6 +67,7 @@ suitable-extractor = $(INFLATE$(suffix $(1)))
 EXTRACTOR_PKG_DEPENDENCY.lzma = $(BR2_XZCAT_HOST_DEPENDENCY)
 EXTRACTOR_PKG_DEPENDENCY.xz   = $(BR2_XZCAT_HOST_DEPENDENCY)
 EXTRACTOR_PKG_DEPENDENCY.lz   = $(BR2_LZIP_HOST_DEPENDENCY)
+EXTRACTOR_PKG_DEPENDENCY.zst  = $(BR2_ZSTD_HOST_DEPENDENCY)
 
 # extractor-pkg-dependency(filename): returns a Buildroot package
 # dependency needed to extract file based on suffix
@@ -73,7 +75,7 @@ extractor-pkg-dependency = $(EXTRACTOR_PKG_DEPENDENCY$(suffix $(1)))
 
 # extractor-system-dependency(filename): returns the name of the tool
 # needed to extract 'filename', and is meant to be used with
-# DL_TOOLS_DEPENDENCIES, in order to check that the necesary tool is
+# DL_TOOLS_DEPENDENCIES, in order to check that the necessary tool is
 # provided by the system Buildroot runs on.
 #
 # $(firstword) is used here because the extractor can have arguments,
@@ -97,7 +99,7 @@ define yesno-to-bool
 endef
 
 # json-info -- return package or filesystem metadata formatted as an entry
-#              of a JSON dictionnary
+#              of a JSON dictionary
 # $(1): upper-case package or filesystem name
 define json-info
 	"$($(1)_NAME)": {
@@ -221,18 +223,12 @@ ifeq ($(BR2_PER_PACKAGE_DIRECTORIES),y)
 # $4: literal "copy" or "hardlink" to copy or hardlink files from src to dest
 define per-package-rsync
 	mkdir -p $(3)
-	$(foreach pkg,$(1),\
-		rsync -a \
-			--hard-links \
-			$(if $(filter hardlink,$(4)), \
-				--link-dest=$(PER_PACKAGE_DIR)/$(pkg)/$(2)/, \
-				$(if $(filter copy,$(4)), \
-					$(empty), \
-					$(error per-package-rsync can only "copy" or "hardlink", not "$(4)") \
-				) \
-			) \
-			$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ \
-			$(3)$(sep))
+	$(if $(filter hardlink,$(4)), \
+		$(foreach pkg,$(1),\
+			rsync -a --hard-links --link-dest=$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ \
+				$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ $(3)$(sep)), \
+		printf "%s/$(2)/\n" $(1) | tac \
+			| rsync -a --hard-links --files-from=- --no-R -r $(PER_PACKAGE_DIR) $(3))
 endef
 
 # prepares the per-package HOST_DIR and TARGET_DIR of the current

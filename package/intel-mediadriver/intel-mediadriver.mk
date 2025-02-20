@@ -5,9 +5,8 @@
 ################################################################################
 
 # based on https://software.intel.com/en-us/articles/build-and-debug-open-source-media-stack
-
 # batocera - bump
-INTEL_MEDIADRIVER_VERSION = 24.3.4
+INTEL_MEDIADRIVER_VERSION = 25.1.1
 INTEL_MEDIADRIVER_SITE = https://github.com/intel/media-driver/archive
 INTEL_MEDIADRIVER_SOURCE= intel-media-$(INTEL_MEDIADRIVER_VERSION).tar.gz
 INTEL_MEDIADRIVER_LICENSE = MIT, BSD-3-Clause

@@ -8,12 +8,12 @@
 # also update glslang to the latest stable version
 
 # RPi4/Panfrost workaround until - https://gitlab.freedesktop.org/mesa/mesa/-/issues/10306 fixed
-ifneq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_ANY)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_SM8250),y)
+ifneq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_ANY)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_SM8250)$(BR2_PACKAGE_BATOCERA_TARGET_T527)$(BR2_PACKAGE_BATOCERA_TARGET_RK3568),y)
     MESA3D_VERSION = 23.2.1
     GLVND_TRUE = true
     GLVND_FALSE = false
 else
-    MESA3D_VERSION = 24.2.7
+    MESA3D_VERSION = 25.0.0
     GLVND_TRUE = enabled
     GLVND_FALSE = disabled
 endif
@@ -29,7 +29,7 @@ MESA3D_INSTALL_STAGING = YES
 
 MESA3D_PROVIDES =
 
-# batocera - add host-python-pyyaml
+# batocera - add host-python-pyyaml & lua
 MESA3D_DEPENDENCIES = \
 	host-bison \
 	host-flex \
@@ -37,6 +37,7 @@ MESA3D_DEPENDENCIES = \
 	host-python-pyyaml \
 	expat \
 	libdrm \
+	lua \
 	zlib
 
 # batocera
@@ -44,18 +45,31 @@ ifeq ($(BR2_PACKAGE_DIRECTX_HEADERS),y)
 MESA3D_DEPENDENCIES += directx-headers
 endif
 
-MESA3D_CONF_OPTS = \
-	-Dgallium-omx=disabled \
-	-Dgallium-rusticl=false \
-	-Dmicrosoft-clc=disabled \
-	-Dopencl-spirv=false \
-	-Dpower8=disabled
+# batocera - remove redundant -Dgallium-omx option for newer mesa
+ifeq ($(MESA3D_VERSION),23.2.1)
+    MESA3D_CONF_OPTS = \
+	    -Dgallium-omx=disabled \
+	    -Dgallium-rusticl=false \
+		-Dmicrosoft-clc=disabled \
+		-Dopencl-spirv=false \
+		-Dpower8=disabled
+else
+    MESA3D_CONF_OPTS = \
+	    -Dgallium-rusticl=false \
+		-Dmicrosoft-clc=disabled \
+		-Dpower8=disabled
+endif
 
+# batocera - remove redundant dri3 option for newer mesa
 ifeq ($(BR2_PACKAGE_MESA3D_DRIVER)$(BR2_PACKAGE_XORG7),yy)
-MESA3D_CONF_OPTS += -Ddri3=enabled
+    ifeq ($(MESA3D_VERSION),23.2.1)
+    MESA3D_CONF_OPTS += -Ddri3=enabled
+	endif
 MESA3D_DEPENDENCIES += xlib_libxshmfence
 else
-MESA3D_CONF_OPTS += -Ddri3=disabled
+    ifeq ($(MESA3D_VERSION),23.2.1)
+    MESA3D_CONF_OPTS += -Ddri3=disabled
+	endif
 endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_LLVM),y)
@@ -121,6 +135,7 @@ MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO) += freedre
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_I915)     += i915
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS)     += iris
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_LIMA)     += lima
+MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_KMSRO)    += kmsro
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_NOUVEAU)  += nouveau
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST) += panfrost
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_R300)     += r300
@@ -132,7 +147,6 @@ MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_TEGRA)    += tegra
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_V3D)      += v3d
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4)      += vc4
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VIRGL)    += virgl
-# batocera - add zink
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ZINK)     += zink
 # batocera - add d3d12
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_D3D12)    += d3d12
@@ -144,6 +158,8 @@ MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_BROADCOM)  += broadcom
 MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_PANFROST)  += panfrost
 MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_FREEDRENO) += freedreno
 MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_LAVAPIPE)  += lavapipe
+MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_SWRAST)    += swrast
+MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_VIRTIO)    += virtio
 # batocera - codecs
 MESA3D_VIDEO_CODECS-$(BR2_PACKAGE_MESA3D_VIDEO_CODEC_VC1DEC)        += vc1dec
 MESA3D_VIDEO_CODECS-$(BR2_PACKAGE_MESA3D_VIDEO_CODEC_H264DEC)       += h264dec
@@ -176,13 +192,15 @@ ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ETNAVIV),y)
 MESA3D_DEPENDENCIES += host-python-pycparser
 endif
 
+# batocera - add spirv-tools for Mesa 25
 ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_INTEL),y)
-MESA3D_DEPENDENCIES += host-python-ply
+MESA3D_DEPENDENCIES += host-python-ply spirv-tools
 endif
 
+# batocera - add -Dmesa-clc=system & spirv-tools for Mesa 25
 ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS),y)
-MESA3D_CONF_OPTS += -Dintel-clc=system
-MESA3D_DEPENDENCIES += host-mesa3d
+MESA3D_CONF_OPTS += -Dintel-clc=system -Dmesa-clc=system
+MESA3D_DEPENDENCIES += host-mesa3d spirv-tools
 endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER),)
@@ -258,7 +276,8 @@ MESA3D_DEPENDENCIES += \
 	xlib_libXrandr \
 	xlib_libXxf86vm \
 	xorgproto \
-	libxcb
+	libxcb \
+	xcb-util-keysyms # batocera
 MESA3D_PLATFORMS += x11
 endif
 ifeq ($(BR2_PACKAGE_WAYLAND),y)
@@ -380,16 +399,30 @@ HOST_MESA3D_DEPENDENCIES = \
 	host-spirv-llvm-translator \
 	host-zlib
 
-HOST_MESA3D_CONF_OPTS = \
-	-Dgallium-omx=disabled \
-	-Dpower8=disabled \
-	-Dgallium-drivers="" \
-	-Dvulkan-drivers="" \
-	-Dglx=disabled \
-	-Dplatforms="" \
-	-Dintel-clc=enabled \
-	-Dllvm=enabled \
-	-Dinstall-intel-clc=true
+ifeq ($(MESA3D_VERSION),23.2.1)
+    HOST_MESA3D_CONF_OPTS = \
+		-Dgallium-omx=disabled \
+		-Dpower8=disabled \
+		-Dgallium-drivers="" \
+		-Dvulkan-drivers="" \
+		-Dglx=disabled \
+		-Dplatforms="" \
+		-Dintel-clc=enabled \
+		-Dllvm=enabled \
+		-Dinstall-intel-clc=true
+else
+    HOST_MESA3D_CONF_OPTS = \
+		-Dpower8=disabled \
+		-Dgallium-drivers="" \
+		-Dvulkan-drivers="" \
+		-Dglx=disabled \
+		-Dplatforms="" \
+		-Dintel-clc=enabled \
+		-Dllvm=enabled \
+		-Dinstall-intel-clc=true \
+		-Dmesa-clc=enabled \
+		-Dinstall-mesa-clc=true
+endif
 
 $(eval $(meson-package))
 # batocera - add host package

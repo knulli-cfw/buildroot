@@ -106,7 +106,7 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_CROCUS
 
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ETNAVIV
 	bool "Gallium Etnaviv driver"
-	depends on (BR2_TOOLCHAIN_HAS_SYNC_4 && !BR2_RISCV_32) || !BR2_PACKAGE_XORG7 # libxshmfence
+	depends on BR2_TOOLCHAIN_HAS_SYNC_4 || !BR2_PACKAGE_XORG7 # libxshmfence
 	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
 	select BR2_PACKAGE_LIBDRM_ETNAVIV
 	help
@@ -143,13 +143,24 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS
 
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_LIMA
 	bool "Gallium lima driver"
-	depends on (BR2_TOOLCHAIN_HAS_SYNC_4 && !BR2_RISCV_32) || !BR2_PACKAGE_XORG7 # libxshmfence
+	depends on BR2_TOOLCHAIN_HAS_SYNC_4 || !BR2_PACKAGE_XORG7 # libxshmfence
 	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
 	select BR2_PACKAGE_MESA3D_OPENGL_EGL
 	help
 	  Mesa driver for ARM Mali Utgard GPUs.
 
-# batocera - use batocera llvm
+config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_KMSRO
+	bool "Gallium kmsro drivers"
+	depends on BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ETNAVIV \
+		|| BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO \
+		|| BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_LIMA \
+		|| BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST \
+		|| BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_V3D \
+		|| BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4
+	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
+	help
+	  Mesa drivers for kernel mode-setting render-only devices
+
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_NOUVEAU
 	bool "Gallium nouveau driver"
 	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
@@ -161,7 +172,7 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_NOUVEAU
 
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST
 	bool "Gallium panfrost driver"
-	depends on (BR2_TOOLCHAIN_HAS_SYNC_4 && !BR2_RISCV_32) || !BR2_PACKAGE_XORG7 # libxshmfence
+	depends on BR2_TOOLCHAIN_HAS_SYNC_4 || !BR2_PACKAGE_XORG7 # libxshmfence
 	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
 	select BR2_PACKAGE_MESA3D_OPENGL_EGL
 	help
@@ -273,7 +284,6 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VIRGL
 	  virgl is the 3D acceleration backend for the virtio-gpu
 	  shipping with qemu.
 
-# batocera - add zink
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ZINK
 	bool "Gallium zink driver"
 	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
@@ -282,8 +292,8 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ZINK
 	select BR2_PACKAGE_MESA3D_OPENGL_GLX        if BR2_PACKAGE_XORG7
 	select BR2_PACKAGE_MESA3D_VULKAN_DRIVER
 	help
-	  The Zink driver emits Vulkan API calls instead of targeting a specific GPU architecture.
-	  This can be used to get full desktop OpenGL support on devices that only support Vulkan.
+	  Zink is a Gallium driver that emits Vulkan API calls,
+	  providing OpenGL support on devices that only support Vulkan.
 
 # batocera - add d3d12
 config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_D3D12
@@ -358,6 +368,12 @@ config BR2_PACKAGE_MESA3D_VULKAN_DRIVER_SWRAST
 	select BR2_PACKAGE_MESA3D_VULKAN_DRIVER
 	help
 	  Vulkan swrast driver.
+
+config BR2_PACKAGE_MESA3D_VULKAN_DRIVER_VIRTIO
+	bool "Vulkan VirtIO driver (Venus)"
+	select BR2_PACKAGE_MESA3D_VULKAN_DRIVER
+	help
+	  Vulkan VirtIO (venus) driver.
 
 comment "Off-screen Rendering"
 
@@ -458,56 +474,48 @@ comment "Off-screen Rendering"
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_VC1DEC
 	bool "VC1DEC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  VC1 hardware decoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_H264DEC
 	bool "H264DEC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  H.264 hardware decoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_H264ENC
 	bool "H264ENC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  H.264 hardware encoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_H265DEC
 	bool "H265DEC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  H.265 hardware decoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_H265ENC
 	bool "H265ENC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  H.265 hardware encoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_AV1DEC
 	bool "AV1DEC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  AV1 hardware decoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_AV1ENC
 	bool "AV1ENC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  AV1 hardware encoding on supported hardware.
 
 config BR2_PACKAGE_MESA3D_VIDEO_CODEC_VP9DEC
 	bool "VP9DEC video codec support"
-	depends on BR2_i386 || BR2_x86_64
 	select BR2_PACKAGE_MESA3D_VIDEO_CODEC
 	help
 	  VP9 hardware decoding on supported hardware.
@@ -552,7 +560,6 @@ config BR2_PACKAGE_MESA3D_OPENGL_EGL
 	depends on BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
 	select BR2_PACKAGE_HAS_LIBEGL if !BR2_PACKAGE_LIBGLVND
 	select BR2_PACKAGE_LIBGLVND_DISPATCH_EGL if BR2_PACKAGE_LIBGLVND
-	select BR2_PACKAGE_HAS_LIBEGL_WAYLAND
 	select BR2_PACKAGE_MESA3D_GBM
 	help
 	  Use the Khronos EGL APIs. EGL is a window manager for OpenGL

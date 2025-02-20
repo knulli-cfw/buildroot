@@ -3,12 +3,12 @@
 # gesftpserver
 #
 ################################################################################
-
-GESFTPSERVER_VERSION = 2
-GESFTPSERVER_SOURCE = sftpserver-$(GESFTPSERVER_VERSION).tar.gz
-GESFTPSERVER_SITE = http://www.greenend.org.uk/rjk/sftpserver
+# batocera - update, switch site, drop source, use autoreconf
+GESFTPSERVER_VERSION = 7cab62566bad3ca49555679276a6137bf914408a
+GESFTPSERVER_SITE = $(call github,ewxrjk,sftpserver,$(GESFTPSERVER_VERSION))
 GESFTPSERVER_LICENSE = GPL-2.0+
 GESFTPSERVER_LICENSE_FILES = COPYING
+GESFTPSERVER_AUTORECONF = YES
 
 # "Missing prototype" warning treated as error
 GESFTPSERVER_CONF_OPTS = --disable-warnings-as-errors

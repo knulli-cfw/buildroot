@@ -3,8 +3,8 @@
 # kodi-pvr-dvblink
 #
 ################################################################################
-# batocera - bump
-KODI_PVR_DVBLINK_VERSION = 21.1.2-Omega
+
+KODI_PVR_DVBLINK_VERSION = 21.1.3-Omega
 KODI_PVR_DVBLINK_SITE = $(call github,kodi-pvr,pvr.dvblink,$(KODI_PVR_DVBLINK_VERSION))
 KODI_PVR_DVBLINK_LICENSE = GPL-2.0+
 KODI_PVR_DVBLINK_LICENSE_FILES = LICENSE.md

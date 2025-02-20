@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SDL2_VERSION = 2.30.8
+SDL2_VERSION = 2.30.12
 SDL2_SOURCE = SDL2-$(SDL2_VERSION).tar.gz
 SDL2_SITE = http://www.libsdl.org/release
 SDL2_LICENSE = Zlib
@@ -211,6 +211,13 @@ SDL2_CONF_OPTS += --disable-alsa
 endif
 
 ifeq ($(BR2_PACKAGE_SDL2_KMSDRM),y)
+# batocera - needed because of 3aca3b603e8e68752f1846ccb54c8d53c22042d7
+ifeq ($(BR2_PACKAGE_HAS_LIBGBM),y)
+SDL2_DEPENDENCIES += libgbm
+endif
+ifeq ($(BR2_PACKAGE_HAS_LIBEGL),y)
+SDL2_DEPENDENCIES += libegl
+endif
 SDL2_DEPENDENCIES += libdrm
 SDL2_CONF_OPTS += --enable-video-kmsdrm
 else

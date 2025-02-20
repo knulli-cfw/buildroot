@@ -41,23 +41,23 @@ diff --git a/src/gallium/drivers/vc4/meson.build b/src/gallium/drivers/vc4/meson
 index 84da951..7f950de 100644
 --- a/src/gallium/drivers/vc4/meson.build
 +++ b/src/gallium/drivers/vc4/meson.build
-@@ -84,7 +84,7 @@ files_libvc4 = files(
- vc4_c_args = []
-
+@@ -72,7 +72,7 @@ vc4_deps = [
+ ]
+ 
  libvc4_neon = []
 -if host_machine.cpu_family() == 'arm'
 +if host_machine.cpu_family() == 'arm' and not get_option('gallium-vc4-neon').disabled()
    libvc4_neon = static_library(
      'vc4_neon',
-     'vc4_tiling_lt_neon.c',
-@@ -93,7 +93,7 @@ if host_machine.cpu_family() == 'arm'
-     ],
-     c_args : '-mfpu=neon',
+     'vc4_tiling_lt.c',
+@@ -82,7 +82,7 @@ if host_machine.cpu_family() == 'arm'
+     c_args : ['-mfpu=neon', '-DV3D_BUILD_NEON'],
+     dependencies : vc4_deps,
    )
 -  vc4_c_args += '-DUSE_ARM_ASM'
 +  vc4_c_args += '-DVC4_TILING_LT_NEON'
  endif
-
+ 
  if dep_simpenrose.found()
 diff --git a/src/gallium/drivers/vc4/vc4_tiling.h b/src/gallium/drivers/vc4/vc4_tiling.h
 index 5afe329..919b299 100644

@@ -98,6 +98,16 @@ else
 FFMPEG_CONF_OPTS += --disable-ffplay
 endif
 
+ifeq ($(BR2_PACKAGE_JACK1),y)
+FFMPEG_CONF_OPTS += --enable-libjack
+FFMPEG_DEPENDENCIES += jack1
+else ifeq ($(BR2_PACKAGE_JACK2),y)
+FFMPEG_CONF_OPTS += --enable-libjack
+FFMPEG_DEPENDENCIES += jack2
+else
+FFMPEG_CONF_OPTS += --disable-libjack
+endif
+
 ifeq ($(BR2_PACKAGE_LIBV4L),y)
 FFMPEG_DEPENDENCIES += libv4l
 FFMPEG_CONF_OPTS += --enable-libv4l2
@@ -422,6 +432,20 @@ else
 FFMPEG_CONF_OPTS += --disable-fontconfig
 endif
 
+ifeq ($(BR2_PACKAGE_HARFBUZZ),y)
+FFMPEG_CONF_OPTS += --enable-libharfbuzz
+FFMPEG_DEPENDENCIES += harfbuzz
+else
+FFMPEG_CONF_OPTS += --disable-libharfbuzz
+endif
+
+ifeq ($(BR2_PACKAGE_LIBFRIBIDI),y)
+FFMPEG_CONF_OPTS += --enable-libfribidi
+FFMPEG_DEPENDENCIES += libfribidi
+else
+FFMPEG_CONF_OPTS += --disable-libfribidi
+endif
+
 ifeq ($(BR2_PACKAGE_OPENJPEG),y)
 FFMPEG_CONF_OPTS += --enable-libopenjpeg
 FFMPEG_DEPENDENCIES += openjpeg
@@ -559,6 +583,11 @@ else
 FFMPEG_CONF_OPTS += --disable-altivec
 endif
 
+# Fix build failure on several missing assembly instructions
+ifeq ($(BR2_RISCV_32),y)
+FFMPEG_CONF_OPTS += --disable-rvv --disable-asm
+endif
+
 # Uses __atomic_fetch_add_4
 ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
 FFMPEG_CONF_OPTS += --extra-libs=-latomic
@@ -583,6 +612,11 @@ endif
 FFMPEG_CFLAGS = $(TARGET_CFLAGS)
 
 ifeq ($(BR2_TOOLCHAIN_HAS_GCC_BUG_85180),y)
+FFMPEG_CONF_OPTS += --disable-optimizations
+FFMPEG_CFLAGS += -O0
+endif
+
+ifeq ($(BR2_TOOLCHAIN_HAS_GCC_BUG_68485),y)
 FFMPEG_CONF_OPTS += --disable-optimizations
 FFMPEG_CFLAGS += -O0
 endif

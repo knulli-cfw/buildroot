@@ -25,7 +25,7 @@ total_memory_kb := $(shell grep MemTotal /proc/meminfo | awk '{print $$2}')
 memory_based_jobs := $(shell echo $$(( $(total_memory_kb) / 1024 / 1024 / 2 + 1)))
 cpu_threads := $(shell nproc)
 jobs := $(shell echo $$(( $(memory_based_jobs) < $(cpu_threads) ? $(memory_based_jobs) : $(cpu_threads) )))
-WEBKITGTK_BUILD_OPTS= -j$(jobs)
+WEBKITGTK_BUILD_OPTS= -j$(jobs) -- -l$(jobs)
 
 WEBKITGTK_CONF_OPTS = \
 	-DENABLE_API_TESTS=OFF \
@@ -38,7 +38,8 @@ WEBKITGTK_CONF_OPTS = \
 	-DUSE_AVIF=OFF \
 	-DUSE_GTK4=OFF \
 	-DUSE_LIBHYPHEN=OFF \
-	-DUSE_WOFF2=ON
+	-DUSE_WOFF2=ON \
+	-DWAYLAND_PROTOCOLS_DATADIR=$(STAGING_DIR)/usr/share/wayland-protocols
 
 ifeq ($(BR2_PACKAGE_WEBKITGTK_SANDBOX),y)
 WEBKITGTK_CONF_OPTS += \
@@ -55,7 +56,7 @@ WEBKITGTK_CONF_OPTS += \
 	-DENABLE_VIDEO=ON \
 	-DENABLE_WEB_AUDIO=ON \
 	-DENABLE_WEB_CODECS=ON
-WEBKITGTK_DEPENDENCIES += gstreamer1 gst1-libav gst1-plugins-base
+WEBKITGTK_DEPENDENCIES += gstreamer1 gst1-libav gst1-plugins-bad gst1-plugins-base
 else
 WEBKITGTK_CONF_OPTS += \
 	-DENABLE_VIDEO=OFF \
@@ -67,6 +68,16 @@ ifeq ($(BR2_PACKAGE_WEBKITGTK_WEBDRIVER),y)
 WEBKITGTK_CONF_OPTS += -DENABLE_WEBDRIVER=ON
 else
 WEBKITGTK_CONF_OPTS += -DENABLE_WEBDRIVER=OFF
+endif
+
+ifeq ($(BR2_PACKAGE_WEBKITGTK_MINIBROWSER),y)
+define WEBKITGTK_INSTALL_MINIBROWSER_SYMLINK
+	ln -sf ../libexec/webkit2gtk-4.1/MiniBrowser $(TARGET_DIR)/usr/bin/MiniBrowser
+endef
+WEBKITGTK_POST_INSTALL_TARGET_HOOKS += WEBKITGTK_INSTALL_MINIBROWSER_SYMLINK
+WEBKITGTK_CONF_OPTS += -DENABLE_MINIBROWSER=ON
+else
+WEBKITGTK_CONF_OPTS += -DENABLE_MINIBROWSER=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_LCMS2),y)
@@ -88,6 +99,13 @@ WEBKITGTK_CONF_OPTS += -DUSE_LIBBACKTRACE=ON
 WEBKITGTK_DEPENDENCIES += libbacktrace
 else
 WEBKITGTK_CONF_OPTS += -DUSE_LIBBACKTRACE=OFF
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM),y)
+WEBKITGTK_CONF_OPTS += -DUSE_LIBDRM=ON
+WEBKITGTK_DEPENDENCIES += libdrm
+else
+WEBKITGTK_CONF_OPTS += -DUSE_LIBDRM=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_LIBJXL),y)

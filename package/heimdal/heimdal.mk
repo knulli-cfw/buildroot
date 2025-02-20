@@ -3,7 +3,7 @@
 # heimdal
 #
 ################################################################################
-# batocera - bump
+# batocera - bump - remove 0001 & 0002 patches
 HEIMDAL_VERSION = ba8c3dbc6261ab397ce5bb4fc0ca6b0ea23eb46a
 HEIMDAL_SITE = $(call github,heimdal,heimdal,$(HEIMDAL_VERSION))
 HOST_HEIMDAL_DEPENDENCIES = host-e2fsprogs host-ncurses host-pkgconf

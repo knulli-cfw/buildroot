@@ -3,9 +3,9 @@
 # mpv
 #
 ################################################################################
-# batcoera - bump for ffmpeg update
+# batocera - bump for ffmpeg update. remove 0001 patch
 # move from waf to meson package
-MPV_VERSION = 0.38.0
+MPV_VERSION = 0.39.0
 MPV_SITE = $(call github,mpv-player,mpv,v$(MPV_VERSION))
 MPV_DEPENDENCIES = \
 	host-pkgconf ffmpeg libass libplacebo zlib \
@@ -232,10 +232,10 @@ endif
 
 # batocera - add vulkan
 ifeq ($(BR2_PACKAGE_VULKAN_HEADERS)$(BR2_PACKAGE_VULKAN_LOADER),yy)
-MPV_CONF_OPTS += -Dvulkan=enabled -Dvulkan-interop=enabled
+MPV_CONF_OPTS += -Dvulkan=enabled
 MPV_DEPENDENCIES += vulkan-headers vulkan-loader
 else
-MPV_CONF_OPTS += -Dvulkan=disabled -Dvulkan-interop=disabled
+MPV_CONF_OPTS += -Dvulkan=disabled
 endif
 
 # batocera - add pipewire
@@ -244,6 +244,29 @@ MPV_CONF_OPTS += -Dpipewire=enabled
 MPV_DEPENDENCIES += pipewire
 else
 MPV_CONF_OPTS += -Dpipewire=disabled
+endif
+
+# batocera - extended va-api support
+ifeq ($(BR2_PACKAGE_LIBVA)$(BR2_PACKAGE_MPV_SUPPORTS_VAAPI),yy)
+ifeq ($(BR2_PACKAGE_WAYLAND),y)
+MPV_CONF_OPTS += -Dvaapi-wayland=enabled
+MPV_DEPENDENCIES += wayland
+else
+MPV_CONF_OPTS += -Dvaapi-wayland=disabled
+endif
+ifeq ($(BR2_PACKAGE_XORG7),y)
+MPV_CONF_OPTS += -Dvaapi-x11=enabled
+MPV_DEPENDENCIES += xlib_libX11 xlib_libXext xlib_libXrender
+else
+MPV_CONF_OPTS += -Dvaapi-x11=disabled
+endif
+endif
+
+# batocera - extend vdpau support
+ifeq ($(BR2_PACKAGE_LIBVDPAU)$(BR2_PACKAGE_XORG7),yy)
+MPV_CONF_OPTS += -Dvdpau-gl-x11=enabled
+else
+MPV_CONF_OPTS += -Dvdpau-gl-x11=disabled
 endif
 
 $(eval $(meson-package))

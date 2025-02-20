@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBCURL_VERSION = 8.7.1
+LIBCURL_VERSION = 8.11.1
 LIBCURL_SOURCE = curl-$(LIBCURL_VERSION).tar.xz
 LIBCURL_SITE = https://curl.se/download
 LIBCURL_DEPENDENCIES = host-pkgconf \
@@ -31,6 +31,10 @@ LIBCURL_CONF_OPTS = \
 	--disable-libcurl-option \
 	--disable-ldap \
 	--disable-ldaps
+
+# Only affects Nest products.
+# https://nvd.nist.gov/vuln/detail/CVE-2024-32928
+LIBCURL_IGNORE_CVES += CVE-2024-32928
 
 ifeq ($(BR2_TOOLCHAIN_HAS_THREADS),y)
 LIBCURL_CONF_OPTS += --enable-threaded-resolver
@@ -203,6 +207,7 @@ LIBCURL_POST_INSTALL_TARGET_HOOKS += LIBCURL_TARGET_CLEANUP
 endif
 
 # batocera - removing host-libcurl causes dependency problem on pipewire
+# add --without-libpsl
 HOST_LIBCURL_DEPENDENCIES = host-openssl
 HOST_LIBCURL_CONF_OPTS = \
 	--disable-manual \
@@ -211,7 +216,8 @@ HOST_LIBCURL_CONF_OPTS = \
 	--with-ssl \
 	--without-gnutls \
 	--without-mbedtls \
-	--without-nss
+	--without-nss \
+	--without-libpsl
 
 HOST_LIBCURL_POST_PATCH_HOOKS += LIBCURL_FIX_DOT_PC
 

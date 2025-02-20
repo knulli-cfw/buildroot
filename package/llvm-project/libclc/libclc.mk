@@ -3,7 +3,7 @@
 # libclc
 #
 ################################################################################
-
+# batocera - remove 0001-support-out-of-tree-build.patch
 LIBCLC_VERSION = $(LLVM_PROJECT_VERSION)
 LIBCLC_SITE = $(LLVM_PROJECT_SITE)
 LIBCLC_SOURCE = libclc-$(LIBCLC_VERSION).src.tar.xz

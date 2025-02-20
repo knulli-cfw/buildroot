@@ -5,7 +5,7 @@
 ################################################################################
 
 GDK_PIXBUF_VERSION_MAJOR = 2.42
-GDK_PIXBUF_VERSION = $(GDK_PIXBUF_VERSION_MAJOR).10
+GDK_PIXBUF_VERSION = $(GDK_PIXBUF_VERSION_MAJOR).12
 GDK_PIXBUF_SOURCE = gdk-pixbuf-$(GDK_PIXBUF_VERSION).tar.xz
 GDK_PIXBUF_SITE = https://download.gnome.org/sources/gdk-pixbuf/$(GDK_PIXBUF_VERSION_MAJOR)
 GDK_PIXBUF_LICENSE = LGPL-2.1+
@@ -30,6 +30,10 @@ HOST_GDK_PIXBUF_CONF_OPTS = \
 	-Dintrospection=disabled \
 	-Drelocatable=true \
 	-Dman=false
+
+# batocera - enable xpm and other file types
+GDK_PIXBUF_CONF_OPTS += -Dothers=enabled
+HOST_GDK_PIXBUF_CONF_OPTS += -Dothers=enabled
 
 ifeq ($(BR2_STATIC_LIBS),y)
 GDK_PIXBUF_CONF_OPTS += -Dbuiltin_loaders=all

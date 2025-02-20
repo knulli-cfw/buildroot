@@ -83,7 +83,7 @@ HOST_GCC_COMMON_CONF_OPTS = \
 	--with-mpc=$(HOST_DIR) \
 	--with-mpfr=$(HOST_DIR) \
 	--with-pkgversion="Buildroot $(BR2_VERSION_FULL)" \
-	--with-bugurl="http://bugs.buildroot.net/" \
+	--with-bugurl="https://gitlab.com/buildroot.org/buildroot/-/issues" \
 	--without-zstd
 
 ifeq ($(BR2_REPRODUCIBLE),y)
@@ -233,7 +233,7 @@ HOST_GCC_COMMON_CONF_OPTS += --with-fp-32="$(GCC_TARGET_FP32_MODE)"
 endif
 
 # musl/uClibc-ng does not work with biarch powerpc toolchains, we
-# need to configure gcc explicitely for 32 Bit for CPU's supporting
+# need to configure gcc explicitly for 32 Bit for CPU's supporting
 # 64 Bit and 32 Bit
 ifneq ($(GCC_TARGET_CPU),)
 ifeq ($(BR2_powerpc),y)
