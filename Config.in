@@ -1,1002 +1,524 @@
+menu "Kernel"
+
+config BR2_LINUX_KERNEL
+	bool "Linux Kernel"
+	select BR2_PACKAGE_HOST_KMOD # Unconditional, even if modules not enabled
+	select BR2_PACKAGE_HOST_IMAGEMAGICK if BR2_LINUX_KERNEL_CUSTOM_LOGO_PATH != ""
+	# Rust support needs those packages
+	select BR2_PACKAGE_HOST_CURL		if !BR2_mipsel
+	select BR2_PACKAGE_HOST_RUSTC		if !BR2_mipsel
+	select BR2_PACKAGE_HOST_RUST_BINDGEN	if !BR2_mipsel
+	help
+	  Enable this option if you want to build a Linux kernel for
+	  your embedded device
+
+if BR2_LINUX_KERNEL
+
+# Packages that need to have a kernel with support for loadable modules,
+# but do not use the kernel-modules infrastructure, should select that
+# option.
+config BR2_LINUX_NEEDS_MODULES
+	bool
+
+#
+# Version selection. We provide the choice between:
+#
+#  1. A single fairly recent stable kernel version
+#  2. A custom stable version
+#  3. A custom tarball
+#  4. A set of custom repository locations
+#
+choice
+	prompt "Kernel version"
+
+config BR2_LINUX_KERNEL_LATEST_VERSION
+	bool "Latest version (6.12)"
+	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_6_12 if BR2_KERNEL_HEADERS_AS_KERNEL
+
+config BR2_LINUX_KERNEL_LATEST_CIP_VERSION
+	bool "Latest CIP SLTS version (5.10.162-cip24)"
+	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_5_10 if BR2_KERNEL_HEADERS_AS_KERNEL
+	help
+	  CIP launched in the spring of 2016 to address the needs of
+	  organizations in industries such as power generation and
+	  distribution, water, oil and gas, transportation, building
+	  automation and more for reliable and secure Linux-based
+	  embedded systems that can be sustained over a period of
+	  10 to as many as 60 years.
+	  The project's goal is to provide an open source base layer
+	  of industrial-grade software that permits the use and
+	  implementation of software building blocks that meet
+	  these requirements.
+
+	  The CIP community plans to maintain 5.10 for security and
+	  bug fixes for more than 10 years.
+
+	  https://www.cip-project.org
+
+config BR2_LINUX_KERNEL_LATEST_CIP_RT_VERSION
+	bool "Latest CIP RT SLTS version (5.10.162-cip24-rt10)"
+	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_5_10 if BR2_KERNEL_HEADERS_AS_KERNEL
+	help
+	  Same as the CIP version, but this is the PREEMPT_RT realtime
+	  variant.
+
+	  The CIP community plans to maintain 5.10 for security and
+	  bug fixes for more than 10 years.
+
+	  https://www.cip-project.org
+
+config BR2_LINUX_KERNEL_CUSTOM_VERSION
+	bool "Custom version"
+	help
+	  This option allows to use a specific official version from
+	  kernel.org, like 2.6.x, 2.6.x.y, 3.x.y, ...
+
+	  Note: you cannot use this option to select a _longterm_ 2.6
+	  kernel, because these kernels are not located at the standard
+	  URL at kernel.org. Instead, select "Custom tarball" and
+	  specify the right URL directly.
+
+config BR2_LINUX_KERNEL_CUSTOM_TARBALL
+	bool "Custom tarball"
+	help
+	  This option allows to specify a URL pointing to a kernel
+	  source tarball. This URL can use any protocol recognized by
+	  Buildroot, like http://, ftp://, file:// or scp://.
+
+	  When pointing to a local tarball using file://, you may want
+	  to use a make variable like $(TOPDIR) to reference the root of
+	  the Buildroot tree.
+
+config BR2_LINUX_KERNEL_CUSTOM_GIT
+	bool "Custom Git repository"
+	help
+	  This option allows Buildroot to get the Linux kernel source
+	  code from a Git repository.
+
+config BR2_LINUX_KERNEL_CUSTOM_HG
+	bool "Custom Mercurial repository"
+	help
+	  This option allows Buildroot to get the Linux kernel source
+	  code from a Mercurial repository.
+
+config BR2_LINUX_KERNEL_CUSTOM_SVN
+	bool "Custom Subversion repository"
+	help
+	  This option allows Buildroot to get the Linux kernel source
+	  code from a Subversion repository.
+
+endchoice
+
+config BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE
+	string "Kernel version"
+	depends on BR2_LINUX_KERNEL_CUSTOM_VERSION
+
+config BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION
+	string "URL of custom kernel tarball"
+	depends on BR2_LINUX_KERNEL_CUSTOM_TARBALL
+
+if BR2_LINUX_KERNEL_CUSTOM_GIT || BR2_LINUX_KERNEL_CUSTOM_HG || BR2_LINUX_KERNEL_CUSTOM_SVN
+
+config BR2_LINUX_KERNEL_CUSTOM_REPO_URL
+	string "URL of custom repository"
+
+config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION
+	string "Custom repository version"
+	help
+	  Revision to use in the typical format used by
+	  Git/Mercurial/Subversion E.G. a sha id, a tag, branch, ..
+
+endif
+
+config BR2_LINUX_KERNEL_CUSTOM_REPO_GIT_SUBMODULES
+	bool "Download also git submodules"
+	depends on BR2_LINUX_KERNEL_CUSTOM_GIT
+	help
+	  Include git submodules in the kernel source tree.
+
+config BR2_LINUX_KERNEL_VERSION
+	string
+	default "6.12.12" if BR2_LINUX_KERNEL_LATEST_VERSION
+	default "5.10.162-cip24" if BR2_LINUX_KERNEL_LATEST_CIP_VERSION
+	default "5.10.162-cip24-rt10" if BR2_LINUX_KERNEL_LATEST_CIP_RT_VERSION
+	default BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE \
+		if BR2_LINUX_KERNEL_CUSTOM_VERSION
+	default "custom" if BR2_LINUX_KERNEL_CUSTOM_TARBALL
+	default BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION \
+		if BR2_LINUX_KERNEL_CUSTOM_GIT || BR2_LINUX_KERNEL_CUSTOM_HG || BR2_LINUX_KERNEL_CUSTOM_SVN
+
+#
+# Patch selection
 #
 
-mainmenu "Buildroot $BR2_VERSION Configuration"
+config BR2_LINUX_KERNEL_PATCH
+	string "Custom kernel patches"
+	help
+	  A space-separated list of patches to apply to the
+	  kernel. Each patch can be described as an URL, a local file
+	  path, or a directory. In the case of a directory, all files
+	  matching *.patch in the directory will be applied.
 
-config BR2_HAVE_DOT_CONFIG
+#
+# Configuration selection
+#
+
+choice
+	prompt "Kernel configuration"
+	default BR2_LINUX_KERNEL_USE_DEFCONFIG
+
+config BR2_LINUX_KERNEL_USE_DEFCONFIG
+	bool "Using an in-tree defconfig file"
+
+config BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG
+	bool "Use the architecture default configuration"
+	# We know that the default configuration on some architectures
+	# requires host-openssl, so select it for the latest kernel
+	# version. This is mainly needed to fix autobuilder testing.
+	select BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL if \
+	       BR2_LINUX_KERNEL_LATEST_VERSION && \
+	       (BR2_aarch64 || BR2_aarch64_be || BR2_arcle || BR2_arceb || BR2_sparc || BR2_x86_64)
+	help
+	  This option will use the default configuration for the
+	  selected architecture. I.e, it is equivalent to running
+	  "make ARCH=<foo> defconfig". This is useful on architectures
+	  that have a single defconfig file, such as ARM64.
+
+config BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG
+	bool "Using a custom (def)config file"
+
+endchoice
+
+config BR2_LINUX_KERNEL_DEFCONFIG
+	string "Defconfig name"
+	depends on BR2_LINUX_KERNEL_USE_DEFCONFIG
+	help
+	  Name of the kernel defconfig file to use, without the
+	  trailing _defconfig.  The defconfig is located in
+	  arch/<arch>/configs in the kernel tree.
+
+config BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE
+	string "Configuration file path"
+	depends on BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG
+	help
+	  Path to the kernel configuration file
+
+	  Note: this can be a defconfig file or a complete .config file,
+	  which can later be saved back with make
+	  linux-update-(def)config.
+
+config BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES
+	string "Additional configuration fragment files"
+	help
+	  A space-separated list of kernel configuration fragment files,
+	  that will be merged to the main kernel configuration file.
+
+config BR2_LINUX_KERNEL_CUSTOM_LOGO_PATH
+	string "Custom boot logo file path"
+	help
+	  Use a custom Linux framebuffer boot logo.
+	  Custom logo should be in PNG or JPEG format, it will be
+	  converted to the linux kernel format (224 colors only)
+	  and copied over the original logo file.
+
+#
+# Binary format
+#
+
+choice
+	prompt "Kernel binary format"
+	default BR2_LINUX_KERNEL_ZIMAGE if BR2_arm || BR2_armeb
+
+config BR2_LINUX_KERNEL_UIMAGE
+	bool "uImage"
+	depends on BR2_arc || BR2_arm || BR2_armeb || \
+		   BR2_powerpc || BR2_powerpc64 || BR2_powerpc64le || \
+		   BR2_sh || BR2_mips || BR2_mipsel || \
+		   BR2_mips64 || BR2_mips64el || BR2_xtensa
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+
+config BR2_LINUX_KERNEL_APPENDED_UIMAGE
+	bool "uImage with appended DT"
+	depends on BR2_arm || BR2_armeb
+	select BR2_LINUX_KERNEL_DTS_SUPPORT
+	select BR2_LINUX_KERNEL_APPENDED_DTB
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+
+config BR2_LINUX_KERNEL_BZIMAGE
+	bool "bzImage"
+	depends on BR2_i386 || BR2_x86_64 || BR2_s390x
+
+config BR2_LINUX_KERNEL_ZIMAGE
+	bool "zImage"
+	depends on BR2_arm || BR2_armeb || BR2_powerpc || \
+		   BR2_powerpc64 || BR2_powerpc64le || BR2_sparc || \
+		   BR2_sh || BR2_xtensa
+
+config BR2_LINUX_KERNEL_ZIMAGE_EPAPR
+	bool "zImage.epapr"
+	depends on BR2_powerpc64 || BR2_powerpc64le
+
+config BR2_LINUX_KERNEL_APPENDED_ZIMAGE
+	bool "zImage with appended DT"
+	depends on BR2_arm || BR2_armeb
+	select BR2_LINUX_KERNEL_DTS_SUPPORT
+	select BR2_LINUX_KERNEL_APPENDED_DTB
+
+config BR2_LINUX_KERNEL_CUIMAGE
+	bool "cuImage"
+	depends on BR2_powerpc
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+	select BR2_LINUX_KERNEL_DTS_SUPPORT
+	select BR2_LINUX_KERNEL_DTB_IS_SELF_BUILT
+
+config BR2_LINUX_KERNEL_SIMPLEIMAGE
+	bool "simpleImage"
+	depends on BR2_microblaze
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+	select BR2_LINUX_KERNEL_DTS_SUPPORT
+	select BR2_LINUX_KERNEL_DTB_IS_SELF_BUILT
+
+config BR2_LINUX_KERNEL_IMAGE
+	bool "Image"
+	depends on BR2_aarch64 || BR2_aarch64_be || BR2_riscv
+
+config BR2_LINUX_KERNEL_IMAGEGZ
+	bool "Image.gz"
+	depends on BR2_aarch64 || BR2_aarch64_be || BR2_riscv
+
+config BR2_LINUX_KERNEL_LINUX_BIN
+	bool "linux.bin"
+	depends on BR2_microblaze
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+
+config BR2_LINUX_KERNEL_VMLINUX_BIN
+	bool "vmlinux.bin"
+	depends on BR2_mips || BR2_mipsel || BR2_sh
+
+config BR2_LINUX_KERNEL_VMLINUX
+	bool "vmlinux"
+
+config BR2_LINUX_KERNEL_VMLINUZ
+	bool "vmlinuz"
+	depends on BR2_mips || BR2_mipsel
+
+config BR2_LINUX_KERNEL_VMLINUZ_BIN
+	bool "vmlinuz.bin"
+	depends on BR2_mips || BR2_mipsel
+
+config BR2_LINUX_KERNEL_IMAGE_TARGET_CUSTOM
+	bool "custom target"
+	help
+	  For certain cases a board-specific target image must be
+	  used.  For example, on powerPC where the OpenFirmware
+	  description is attached in a board-specific kernel image
+	  target like 'cuImage.mpc8379_rdb'.
+
+	  Select this option and specify the make target in "Kernel
+	  image target name".
+
+endchoice
+
+#
+# Kernel compression format
+#
+
+choice
+	prompt "Kernel compression format"
+	help
+	  This selection will just ensure that the correct host tools
+	  are built. The actual compression for the kernel should be
+	  selected in the kernel configuration menu.
+
+config BR2_LINUX_KERNEL_GZIP
+	bool "gzip compression"
+
+config BR2_LINUX_KERNEL_LZ4
+	bool "lz4 compression"
+
+config BR2_LINUX_KERNEL_LZMA
+	bool "lzma compression"
+
+config BR2_LINUX_KERNEL_LZO
+	bool "lzo compression"
+
+config BR2_LINUX_KERNEL_XZ
+	bool "xz compression"
+
+config BR2_LINUX_KERNEL_ZSTD
+	bool "zstd compression"
+
+config BR2_LINUX_KERNEL_UNCOMPRESSED
+	bool "uncompressed"
+	depends on BR2_s390x
+
+endchoice
+
+config BR2_LINUX_KERNEL_IMAGE_TARGET_NAME
+	string "Kernel image target name"
+	depends on BR2_LINUX_KERNEL_IMAGE_TARGET_CUSTOM
+	help
+	  Specify the kernel make target to build the kernel that you
+	  need.
+
+config BR2_LINUX_KERNEL_IMAGE_NAME
+	string "Kernel image name"
+	depends on BR2_LINUX_KERNEL_IMAGE_TARGET_CUSTOM
+	help
+	  The filename of the kernel image, if it is different from
+	  the make target (above). Defaults to
+	  BR2_LINUX_KERNEL_IMAGE_TARGET_NAME. If specified, the
+	  filename is relative to arch/ARCH/boot/.
+
+	  If unsure, leave it empty.
+
+config BR2_LINUX_KERNEL_UIMAGE_LOADADDR
+	string "load address (for 3.7+ multi-platform image)"
+	depends on BR2_arm || BR2_armeb
+	depends on BR2_LINUX_KERNEL_UIMAGE || BR2_LINUX_KERNEL_APPENDED_UIMAGE
+	help
+	  If your ARM system's Linux kernel is configured with the new
+	  (3.7+) multi-architecture support (CONFIG_ARCH_MULTIPLATFORM=y
+	  in your kernel config), then it is necessary to specify a
+	  kernel load address when building the uImage. This should be a
+	  hexadecimal string beginning with 0x, for example: 0x00008000.
+
+	  If unsure, let this option empty.
+
+config BR2_LINUX_KERNEL_DTS_SUPPORT
+	bool "Build a Device Tree Blob (DTB)"
+	help
+	  Compile one or more device tree sources into device tree
+	  blobs.
+	  Select the dts files to compile in the options below.
+
+if BR2_LINUX_KERNEL_DTS_SUPPORT
+
+# We have mainly three cases when it comes to device tree support:
+#   1) We don't want any support at all. Then the ..DTS_SUPPORT
+#      variable won't be set
+#   2) We want device tree support, so we need the user to enter the
+#      device tree name or the path to the custom device he uses, but
+#      the kernel abstracts this from us and only build an image that
+#      looks like a regular kernel image. In this case, we only need
+#      to derive the kernel image name from the given device tree
+#      name, and all the rest is as usual
+#   3) We want device tree support, but the kernel requires us to
+#      build the device tree blob separately. In this case, some
+#      more logic will be needed.
+# The variable below address the second case, were you only want
+# limited actions from buildroot.
+config BR2_LINUX_KERNEL_DTB_IS_SELF_BUILT
+	bool "DTB is built by kernel itself"
+	help
+	  Normally, the device tree(s) to be built have to be passed
+	  explicitly to the kernel build system. For some binary
+	  formats, however, the kernel build system links in the
+	  device tree directly in the kernel binary. Select this option
+	  if you have such a kernel binary format.
+
+config BR2_LINUX_KERNEL_APPENDED_DTB
 	bool
-	default y
 
-config BR2_VERSION
-	string
-	option env="BR2_VERSION_FULL"
-
-config BR2_HOSTARCH
-	string
-	option env="HOSTARCH"
-
-config BR2_BASE_DIR
-	string
-	option env="BASE_DIR"
-
-# br2-external paths definitions
-source "$BR2_BASE_DIR/.br2-external.in.paths"
-
-# Hidden config symbols for packages to check system gcc version
-config BR2_HOST_GCC_VERSION
-	string
-	option env="HOST_GCC_VERSION"
-
-config BR2_HOST_GCC_AT_LEAST_4_9
-	bool
-	default y if BR2_HOST_GCC_VERSION = "4 9"
-
-config BR2_HOST_GCC_AT_LEAST_5
-	bool
-	default y if BR2_HOST_GCC_VERSION = "5"
-	select BR2_HOST_GCC_AT_LEAST_4_9
-
-config BR2_HOST_GCC_AT_LEAST_6
-	bool
-	default y if BR2_HOST_GCC_VERSION = "6"
-	select BR2_HOST_GCC_AT_LEAST_5
-
-config BR2_HOST_GCC_AT_LEAST_7
-	bool
-	default y if BR2_HOST_GCC_VERSION = "7"
-	select BR2_HOST_GCC_AT_LEAST_6
-
-config BR2_HOST_GCC_AT_LEAST_8
-	bool
-	default y if BR2_HOST_GCC_VERSION = "8"
-	select BR2_HOST_GCC_AT_LEAST_7
-
-config BR2_HOST_GCC_AT_LEAST_9
-	bool
-	default y if BR2_HOST_GCC_VERSION = "9"
-	select BR2_HOST_GCC_AT_LEAST_8
-
-config BR2_HOST_GCC_AT_LEAST_10
-	bool
-	default y if BR2_HOST_GCC_VERSION = "10"
-	select BR2_HOST_GCC_AT_LEAST_9
-
-config BR2_HOST_GCC_AT_LEAST_11
-	bool
-	default y if BR2_HOST_GCC_VERSION = "11"
-	select BR2_HOST_GCC_AT_LEAST_10
-
-# When adding new entries above, be sure to update
-# the HOSTCC_MAX_VERSION variable in the Makefile.
-
-# Hidden boolean selected by packages in need of Java in order to build
-# (example: kodi)
-config BR2_NEEDS_HOST_JAVA
-	bool
-
-# Hidden boolean selected by pre-built packages for x86, when they
-# need to run on x86-64 machines (example: pre-built external
-# toolchains, binary tools, etc.).
-config BR2_HOSTARCH_NEEDS_IA32_LIBS
-	bool
-
-# Hidden boolean selected by packages that need to build 32 bits
-# binaries with the host compiler, even on 64 bits build machines (e.g
-# bootloaders).
-config BR2_HOSTARCH_NEEDS_IA32_COMPILER
-	bool
-
-# Hidden boolean selected by packages that need the host to have an
-# UTF8 locale.
-config BR2_NEEDS_HOST_UTF8_LOCALE
-	bool
-
-# Hidden boolean selected by packages that need the host to have
-# support for building gcc plugins
-config BR2_NEEDS_HOST_GCC_PLUGIN_SUPPORT
-	bool
-
-source "arch/Config.in"
-
-source "toolchain/Config.in"
-
-menu "Build options"
-
-menu "Commands"
-
-config BR2_CURL
-	string "Curl command"
-	default "curl -q --ftp-pasv --retry 3"
-
-config BR2_WGET
-	string "Wget command"
-	default "wget -nd -t 3"
-
-config BR2_SVN
-	string "Subversion (svn) command"
-	default "svn --non-interactive"
-
-config BR2_BZR
-	string "Bazaar (bzr) command"
-	default "bzr"
-
-config BR2_GIT
-	string "Git command"
-	default "git"
-
-config BR2_CVS
-	string "CVS command"
-	default "cvs"
-
-config BR2_LOCALFILES
-	string "Local files retrieval command"
-	default "cp"
-
-config BR2_SCP
-	string "Secure copy (scp) command"
-	default "scp"
-
-config BR2_SFTP
-	string "Secure file transfer (sftp) command"
-	default "sftp"
-
-config BR2_HG
-	string "Mercurial (hg) command"
-	default "hg"
-
-config BR2_ZCAT
-	string "zcat command"
-	default "gzip -d -c"
+config BR2_LINUX_KERNEL_INTREE_DTS_NAME
+	string "In-tree Device Tree Source file names"
 	help
-	  Command to be used to extract a gzip'ed file to stdout. zcat
-	  is identical to gunzip -c except that the former may not be
-	  available on your system.
-	  Default is "gzip -d -c"
-	  Other possible values include "gunzip -c" or "zcat".
+	  Name of in-tree device tree source file, without
+	  the trailing .dts. You can provide a list of
+	  dts files to build, separated by spaces.
 
-config BR2_BZCAT
-	string "bzcat command"
-	default "bzcat"
+config BR2_LINUX_KERNEL_CUSTOM_DTS_PATH
+	string "Out-of-tree Device Tree Source file paths"
 	help
-	  Command to be used to extract a bzip2'ed file to stdout.
-	  bzcat is identical to bunzip2 -c except that the former may
-	  not be available on your system.
-	  Default is "bzcat"
-	  Other possible values include "bunzip2 -c" or "bzip2 -d -c".
+	  Paths to out-of-tree Device Tree Source (.dts) and Device Tree
+	  Source Include (.dtsi) files, separated by spaces. These files
+	  will be copied to the kernel sources and the .dts files will
+	  be compiled from there.
 
-config BR2_XZCAT
-	string "xzcat command"
-	default "xzcat"
+config BR2_LINUX_KERNEL_DTB_KEEP_DIRNAME
+	bool "Keep the directory name of the Device Tree"
 	help
-	  Command to be used to extract a xz'ed file to stdout.
-	  Default is "xzcat"
+	  If enabled, the device tree blobs keep their
+	  directory prefixes when they get copied to the
+	  output image directory or the target directory.
 
-config BR2_LZCAT
-	string "lzcat command"
-	default "lzip -d -c"
+config BR2_LINUX_KERNEL_DTB_OVERLAY_SUPPORT
+	bool "Build Device Tree with overlay support"
 	help
-	  Command to be used to extract a lzip'ed file to stdout.
-	  Default is "lzip -d -c"
-
-config BR2_ZSTDCAT
-	string "zstdcat command"
-	default "zstdcat"
-	help
-	  Command to be used to extract a zstd'ed file to stdout.
-	  Default is "zstdcat"
-
-config BR2_TAR_OPTIONS
-	string "Tar options"
-	default ""
-	help
-	  Options to pass to tar when extracting the sources.
-	  E.g. " -v --exclude='*.svn*'" to exclude all .svn internal
-	  files and to be verbose.
-
-endmenu
-
-config BR2_DEFCONFIG_FROM_ENV
-	string
-	option env="BR2_DEFCONFIG"
-
-config BR2_DEFCONFIG
-	string "Location to save buildroot config"
-	default BR2_DEFCONFIG_FROM_ENV if BR2_DEFCONFIG_FROM_ENV != ""
-	default "$(CONFIG_DIR)/defconfig"
-	help
-	  When running 'make savedefconfig', the defconfig file will be
-	  saved in this location.
-
-config BR2_DL_DIR
-	string "Download dir"
-	default "$(TOPDIR)/dl"
-	help
-	  Directory to store all the source files that we need to fetch.
-	  If the Linux shell environment has defined the BR2_DL_DIR
-	  environment variable, then this overrides this configuration
-	  item.
-	  The directory is organized with a subdirectory for each
-	  package. Each package has its own $(LIBFOO_DL_DIR) variable
-	  that can be used to find the correct path.
-
-	  The default is $(TOPDIR)/dl
-
-config BR2_HOST_DIR
-	string "Host dir"
-	default "$(BASE_DIR)/host"
-	help
-	  Directory to store all the binary files that are built for the
-	  host. This includes the cross compilation toolchain when
-	  building the internal buildroot toolchain.
-
-	  The default is $(BASE_DIR)/host
-
-menu "Mirrors and Download locations"
-
-config BR2_PRIMARY_SITE
-	string "Primary download site"
-	default ""
-	help
-	  Primary site to download from. If this option is set then
-	  buildroot will try to download package source first from this
-	  site and try the default if the file is not found.
-	  Valid URIs are:
-	    - URIs recognized by $(WGET)
-	    - local URIs of the form file://absolutepath
-	    - scp URIs of the form scp://[user@]host:path.
-
-config BR2_PRIMARY_SITE_ONLY
-	bool "Only allow downloads from primary download site"
-	depends on BR2_PRIMARY_SITE != ""
-	help
-	  If this option is enabled, downloads will only be attempted
-	  from the primary download site. Other locations, like the
-	  package's official download location or the backup download
-	  site, will not be considered. Therefore, if the package is not
-	  present on the primary site, the download fails.
-
-	  This is useful for project developers who want to ensure that
-	  the project can be built even if the upstream tarball
-	  locations disappear.
-
-if !BR2_PRIMARY_SITE_ONLY
-
-config BR2_BACKUP_SITE
-	string "Backup download site"
-	default "https://sources.buildroot.net"
-	help
-	  Backup site to download from. If this option is set then
-	  buildroot will fall back to download package sources from here
-	  if the normal location fails.
-
-config BR2_KERNEL_MIRROR
-	string "Kernel.org mirror"
-	default "https://cdn.kernel.org/pub"
-	help
-	  kernel.org is mirrored on a number of servers around the
-	  world. The following allows you to select your preferred
-	  mirror. By default, a CDN is used, which automatically
-	  redirects to a mirror geographically close to you.
-
-	  Have a look on the kernel.org site for a list of mirrors, then
-	  enter the URL to the base directory. Examples:
-
-	     http://www.XX.kernel.org/pub (XX = country code)
-	     http://mirror.aarnet.edu.au/pub/ftp.kernel.org
-
-config BR2_GNU_MIRROR
-	string "GNU Software mirror"
-	default "https://ftpmirror.gnu.org"
-	help
-	  GNU has multiple software mirrors scattered around the
-	  world. The following allows you to select your preferred
-	  mirror. By default, a generic address is used, which
-	  automatically selects an up-to-date and local mirror.
-
-	  Have a look on the gnu.org site for a list of mirrors, then
-	  enter the URL to the base directory. Examples:
-
-	     http://ftp.gnu.org/pub/gnu
-	     http://mirror.aarnet.edu.au/pub/gnu
-
-config BR2_LUAROCKS_MIRROR
-	string "LuaRocks mirror"
-	default "http://rocks.moonscript.org"
-	help
-	  LuaRocks repository.
-
-	  See http://luarocks.org
-
-config BR2_CPAN_MIRROR
-	string "CPAN mirror (Perl packages)"
-	default "https://cpan.metacpan.org"
-	help
-	  CPAN (Comprehensive Perl Archive Network) is a repository of
-	  Perl packages. It has multiple software mirrors scattered
-	  around the world. This option allows you to select a mirror.
-
-	  The list of mirrors is available at:
-	  http://mirrors.cpan.org/          (tabular)
-	  http://mirrors.cpan.org/map.html  (clickable world map)
+	  If enabled, pass the "-@" option to dtc, such that
+	  symbols are generated in the compiled Device Tree.
+	  Choose this option to support Device Tree overlays
+	  on the target system.
 
 endif
 
-endmenu
-
-config BR2_JLEVEL
-	int "Number of jobs to run simultaneously (0 for auto)"
-	default "0"
+config BR2_LINUX_KERNEL_INSTALL_TARGET
+	bool "Install kernel image to /boot in target"
+	depends on !BR2_TARGET_ROOTFS_INITRAMFS
 	help
-	  Number of jobs to run simultaneously. If 0, determine
-	  automatically according to number of CPUs on the host system.
+	  Select this option to have the kernel image installed to
+	  /boot in the target root filesystem, as is typically done on
+	  x86/x86_64 systems.
 
-comment "ccache needs a host gcc >= 8"
-	depends on !BR2_HOST_GCC_AT_LEAST_8
+	  Note that this option also installs the Device Tree Blobs to
+	  /boot if DTBs have been generated by the kernel build
+	  process.
 
-config BR2_CCACHE
-	bool "Enable compiler cache"
-	depends on BR2_HOST_GCC_AT_LEAST_8
+config BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL
+	bool "Needs host OpenSSL"
 	help
-	  This option will enable the use of ccache, a compiler cache.
-	  It will cache the result of previous builds to speed up future
-	  builds. By default, the cache is stored in
-	  $HOME/.buildroot-ccache.
+	  Some Linux kernel configuration options (such as
+	  CONFIG_SYSTEM_TRUSTED_KEYRING) require building a host
+	  program called extract-cert, which itself needs
+	  OpenSSL. Enabling this option will ensure host-openssl gets
+	  built before the Linux kernel.
 
-	  Note that Buildroot does not try to invalidate the cache
-	  contents when the compiler changes in an incompatible way.
-	  Therefore, if you make a change to the compiler version and/or
-	  configuration, you are responsible for purging the ccache
-	  cache by removing the $HOME/.buildroot-ccache directory.
+	  Enable this option if you get a Linux kernel build failure
+	  such as "scripts/extract-cert.c:21:25: fatal error:
+	  openssl/bio.h: No such file or directory".
 
-if BR2_CCACHE
-
-config BR2_CCACHE_DIR
-	string "Compiler cache location"
-	default "$(HOME)/.buildroot-ccache"
+config BR2_LINUX_KERNEL_NEEDS_HOST_LIBELF
+	bool "Needs host libelf"
 	help
-	  Where ccache should store cached files.
-	  If the Linux shell environment has defined the BR2_CCACHE_DIR
-	  environment variable, then this overrides this configuration
-	  item.
+	  Some Linux kernel configuration options (such as
+	  CONFIG_UNWINDER_ORC) require building a host program that
+	  needs libelf. Enabling this option will ensure host-elfutils
+	  (which provides libelf) gets built before the Linux kernel.
 
-config BR2_CCACHE_INITIAL_SETUP
-	string "Compiler cache initial setup"
+	  Enable this option if you get a Linux kernel build failure
+	  such as "Cannot generate ORC metadata for
+	  CONFIG_UNWINDER_ORC=y, please install libelf-dev,
+	  libelf-devel or elfutils-libelf-devel".
+
+config BR2_LINUX_KERNEL_NEEDS_HOST_PAHOLE
+	bool "Needs host pahole"
 	help
-	  Initial ccache settings to apply, such as --max-files or
-	  --max-size.
+	  Some Linux kernel configuration options (such as
+	  CONFIG_DEBUG_INFO_BTF) require building a host program
+	  called pahole. Enabling this option will ensure host-pahole
+	  gets built before the Linux kernel.
 
-	  For example, if your project is known to require more space
-	  than the default max cache size, then you might want to
-	  increase the cache size to a suitable amount using the -M
-	  (--max-size) option.
+	  Enable this option if you get a Linux kernel build failure
+	  such as "BTF: .tmp_vmlinux.btf: pahole (pahole) is not
+	  available".
 
-	  The string you specify here is passed verbatim to ccache.
-	  Refer to ccache documentation for more details.
-
-	  These initial settings are applied after ccache has been
-	  compiled.
-
-config BR2_CCACHE_USE_BASEDIR
-	bool "Use relative paths"
-	default y
+config BR2_LINUX_KERNEL_NEEDS_HOST_PYTHON3
+	bool "Needs host python3"
 	help
-	  Allow ccache to convert absolute paths within the output
-	  directory into relative paths.
+	  Some Linux kernel configuration options (such as the
+	  CONFIG_DRM_MSM in v6.10 and greater) require a host python3
+	  interpreter. Enabling this option will ensure host-python3
+	  gets built before the Linux kernel.
 
-	  During the build, many -I include directives are given with an
-	  absolute path. These absolute paths end up in the hashes that
-	  are computed by ccache. Therefore, when you build from a
-	  different directory, the hash will be different and the cached
-	  object will not be used.
+	  Enable this option if you get a Linux kernel build failure
+	  such as "python3: not found".
 
-	  To improve cache performance, set this option to y. This
-	  allows ccache to rewrite absolute paths within the output
-	  directory into relative paths. Note that only paths within the
-	  output directory will be rewritten; therefore, if you change
-	  BR2_HOST_DIR to point outside the output directory and
-	  subsequently move it to a different location, this will lead
-	  to cache misses.
+# Linux extensions
+source "linux/Config.ext.in"
 
-	  This option has as a result that the debug information in the
-	  object files also has only relative paths. Therefore, make
-	  sure you cd to the build directory before starting gdb. See
-	  the section "COMPILING IN DIFFERENT DIRECTORIES" in the ccache
-	  manual for more information.
+# Linux tools
+source "package/linux-tools/Config.in"
 
-endif
-
-config BR2_ENABLE_DEBUG
-	bool "build packages with debugging symbols"
-	help
-	  Build packages with debugging symbols enabled. All libraries
-	  and binaries in the 'staging' directory will have debugging
-	  symbols, which allows remote debugging even if libraries and
-	  binaries are stripped on the target. Whether libraries and
-	  binaries are stripped on the target is controlled by the
-	  BR2_STRIP_* options below.
-
-if BR2_ENABLE_DEBUG
-choice
-	prompt "gcc debug level"
-	default BR2_DEBUG_2
-	help
-	  Set the debug level for gcc
-
-config BR2_DEBUG_1
-	bool "debug level 1"
-	help
-	  Debug level 1 produces minimal information, enough for making
-	  backtraces in parts of the program that you don't plan to
-	  debug. This includes descriptions of functions and external
-	  variables, but no information about local variables and no
-	  line numbers.
-
-config BR2_DEBUG_2
-	bool "debug level 2"
-	help
-	  The default gcc debug level is 2
-
-config BR2_DEBUG_3
-	bool "debug level 3"
-	help
-	  Level 3 includes extra information, such as all the macro
-	  definitions present in the program. Some debuggers support
-	  macro expansion when you use -g3.
-endchoice
-endif
-
-config BR2_ENABLE_RUNTIME_DEBUG
-	bool "build packages with runtime debugging info"
-	help
-	  Some packages may have runtime assertions, extra traces, and
-	  similar runtime elements that can help debugging. However,
-	  these elements may negatively influence performance so should
-	  normally not be enabled on production systems.
-
-	  Enable this option to enable such runtime debugging.
-
-	  Note: disabling this option is not a guarantee that all
-	  packages effectively removed these runtime debugging elements.
-
-config BR2_STRIP_strip
-	bool "strip target binaries"
-	default y
-	depends on BR2_BINFMT_ELF
-	help
-	  Binaries and libraries in the target filesystem will be
-	  stripped using the normal 'strip' command. This allows to save
-	  space, mainly by removing debugging symbols. Debugging symbols
-	  on the target are needed for native debugging, but not when
-	  remote debugging is used.
-
-config BR2_STRIP_EXCLUDE_FILES
-	string "executables that should not be stripped"
-	default ""
-	depends on BR2_STRIP_strip
-	help
-	  You may specify a space-separated list of binaries and
-	  libraries here that should not be stripped on the target.
-
-config BR2_STRIP_EXCLUDE_DIRS
-	string "directories that should be skipped when stripping"
-	default ""
-	depends on BR2_STRIP_strip
-	help
-	  You may specify a space-separated list of directories that
-	  should be skipped when stripping. Binaries and libraries in
-	  these directories will not be touched. The directories should
-	  be specified relative to the target directory, without leading
-	  slash.
-
-choice
-	prompt "gcc optimization level"
-	default BR2_OPTIMIZE_2
-	help
-	  Set the optimization level for gcc
-
-config BR2_OPTIMIZE_0
-	bool "optimization level 0"
-	help
-	  Do not optimize.
-
-config BR2_OPTIMIZE_1
-	bool "optimization level 1"
-	help
-	  Optimize. Optimizing compilation takes somewhat more time, and
-	  a lot more memory for a large function. With -O, the compiler
-	  tries to reduce code size and execution time, without
-	  performing any optimizations that take a great deal of
-	  compilation time. -O turns on the following optimization
-	  flags: -fdefer-pop -fdelayed-branch -fguess-branch-probability
-	  -fcprop-registers -floop-optimize -fif-conversion
-	  -fif-conversion2 -ftree-ccp -ftree-dce -ftree-dominator-opts
-	  -ftree-dse -ftree-ter -ftree-lrs -ftree-sra -ftree-copyrename
-	  -ftree-fre -ftree-ch -funit-at-a-time -fmerge-constants. -O
-	  also turns on -fomit-frame-pointer on machines where doing so
-	  does not interfere with debugging.
-
-config BR2_OPTIMIZE_2
-	bool "optimization level 2"
-	help
-	  Optimize even more. GCC performs nearly all supported
-	  optimizations that do not involve a space-speed tradeoff. The
-	  compiler does not perform loop unrolling or function inlining
-	  when you specify -O2. As compared to -O, this option increases
-	  both compilation time and the performance of the generated
-	  code. -O2 turns on all optimization flags specified by -O. It
-	  also turns on the following optimization flags:
-	  -fthread-jumps -fcrossjumping -foptimize-sibling-calls
-	  -fcse-follow-jumps -fcse-skip-blocks -fgcse  -fgcse-lm
-	  -fexpensive-optimizations -fstrength-reduce
-	  -frerun-cse-after-loop -frerun-loop-opt -fcaller-saves
-	  -fpeephole2 -fschedule-insns -fschedule-insns2
-	  -fsched-interblock -fsched-spec -fregmove -fstrict-aliasing
-	  -fdelete-null-pointer-checks -freorder-blocks
-	  -freorder-functions -falign-functions -falign-jumps
-	  -falign-loops -falign-labels -ftree-vrp -ftree-pre. Please
-	  note the warning under -fgcse about invoking -O2 on programs
-	  that use computed gotos.
-	  This is the default.
-
-config BR2_OPTIMIZE_3
-	bool "optimization level 3"
-	help
-	  Optimize yet more. -O3 turns on all optimizations specified by
-	  -O2 and also turns on the -finline-functions, -funswitch-loops
-	  and -fgcse-after-reload options.
-
-config BR2_OPTIMIZE_G
-	bool "optimize for debugging"
-	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_8
-	help
-	  Optimize for debugging. This enables optimizations that do not
-	  interfere with debugging. It should be the optimization level
-	  of choice for the standard edit-compile-debug cycle, offering
-	  a reasonable level of optimization while maintaining fast
-	  compilation and a good debugging experience.
-
-config BR2_OPTIMIZE_S
-	bool "optimize for size"
-	help
-	  Optimize for size. -Os enables all -O2 optimizations that do
-	  not typically increase code size. It also performs further
-	  optimizations designed to reduce code size. -Os disables the
-	  following optimization flags: -falign-functions -falign-jumps
-	  -falign-loops -falign-labels -freorder-blocks
-	  -freorder-blocks-and-partition -fprefetch-loop-arrays
-	  -ftree-vect-loop-version
-
-config BR2_OPTIMIZE_FAST
-	bool "optimize for fast (may break packages!)"
-	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_6
-	help
-	  Optimize for fast. Disregard strict standards
-	  compliance. -Ofast enables all -O3 optimizations. It also
-	  enables optimizations that are not valid for all
-	  standard-compliant programs, so be careful, as it may break
-	  some packages. It turns on -ffast-math and the
-	  Fortran-specific -fstack-arrays, unless -fmax-stack-var-size
-	  is specified, and -fno-protect-parens.
-
-endchoice
-
-config BR2_ENABLE_LTO
-	bool "build packages with link-time optimisation"
-	help
-	  Enable the link-time optimisation (LTO) option when building
-	  packages. Link-time optimisation re-runs optimisations at
-	  link time, which allows the compiler to do interprocedural
-	  analysis across compilation units and thus come with better
-	  results: smaller size and better performance.
-
-	  Note that this analysis is limited to statically linked
-	  object files and libraries.
-
-	  This option may significantly increase build times,
-	  sometimes 5 times longer, with only limited gains.
-
-	  At this time, this option only enables LTO in packages that
-	  have an explicit configuration option for it. Other packages
-	  always enable LTO, but most packages never enable LTO.
-
-config BR2_GOOGLE_BREAKPAD_ENABLE
-	bool "Enable google-breakpad support"
-	depends on BR2_INSTALL_LIBSTDCPP
-	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_7 # C++17
-	depends on BR2_USE_WCHAR
-	depends on BR2_TOOLCHAIN_HAS_THREADS
-	depends on BR2_TOOLCHAIN_USES_GLIBC
-	depends on BR2_PACKAGE_GOOGLE_BREAKPAD_ARCH_SUPPORTS
-	depends on BR2_PACKAGE_HOST_GOOGLE_BREAKPAD_ARCH_SUPPORTS
-	select BR2_PACKAGE_GOOGLE_BREAKPAD
-	help
-	  This option will enable the use of google breakpad, a library
-	  and tool suite that allows you to distribute an application to
-	  users with compiler-provided debugging information removed,
-	  record crashes in compact "minidump" files, send them back to
-	  your server and produce C and C++ stack traces from these
-	  minidumps. Breakpad can also write minidumps on request for
-	  programs that have not crashed.
-
-if BR2_GOOGLE_BREAKPAD_ENABLE
-
-config BR2_GOOGLE_BREAKPAD_INCLUDE_FILES
-	string "List of executables and libraries to extract symbols from"
-	default ""
-	help
-	  You may specify a space-separated list of binaries and
-	  libraries with full paths relative to $(TARGET_DIR) of which
-	  debug symbols will be dumped for further use with google
-	  breakpad.
-
-	  A directory structure that can be used by minidump-stackwalk
-	  will be created at:
-
-	  $(STAGING_DIR)/usr/share/google-breakpad-symbols
-
-endif
-
-choice
-	bool "libraries"
-	default BR2_SHARED_LIBS if BR2_BINFMT_SUPPORTS_SHARED
-	default BR2_STATIC_LIBS if !BR2_BINFMT_SUPPORTS_SHARED
-	help
-	  Select the type of libraries you want to use on the target.
-
-	  The default is to build dynamic libraries and use those on the
-	  target filesystem, except when the architecture and/or the
-	  selected binary format does not support shared libraries.
-
-config BR2_STATIC_LIBS
-	bool "static only"
-	depends on !BR2_TOOLCHAIN_USES_GLIBC
-	help
-	  Build and use only static libraries. No shared libraries will
-	  be installed on the target. This potentially increases your
-	  code size and should only be used if you know what you are
-	  doing. Note that some packages may not be available when this
-	  option is enabled, due to their need for dynamic library
-	  support.
-
-comment "static only needs a toolchain w/ uclibc or musl"
-	depends on BR2_TOOLCHAIN_USES_GLIBC
-
-config BR2_SHARED_LIBS
-	bool "shared only"
-	depends on BR2_BINFMT_SUPPORTS_SHARED
-	help
-	  Build and use only shared libraries. This is the recommended
-	  solution as it saves space and build time.
-
-config BR2_SHARED_STATIC_LIBS
-	bool "both static and shared"
-	depends on BR2_BINFMT_SUPPORTS_SHARED
-	help
-	  Build both shared and static libraries, but link executables
-	  dynamically. While building both shared and static libraries
-	  take more time and more disk space, having static libraries
-	  may be useful to link some of the applications statically.
-
-endchoice
-
-config BR2_PACKAGE_OVERRIDE_FILE
-	string "location of a package override file"
-	default "$(CONFIG_DIR)/local.mk"
-	help
-	  A package override file is a short makefile that contains
-	  variable definitions of the form <pkg>_OVERRIDE_SRCDIR, which
-	  allows to tell Buildroot to use an existing directory as the
-	  source directory for a particular package. See the Buildroot
-	  documentation for more details on this feature.
-
-config BR2_GLOBAL_PATCH_DIR
-	string "global patch and hash directories"
-	help
-	  You may specify a space separated list of one or more
-	  directories containing global package patches and/or hashes.
-	  For a specific version <packageversion> of a specific package
-	  <packagename>, patches are looked up as follows:
-
-	  First, the default Buildroot patch set for the package is
-	  applied from the package's directory in Buildroot.
-
-	  Then for every directory - <global-patch-dir> - that exists in
-	  BR2_GLOBAL_PATCH_DIR, if the directory
-	  <global-patch-dir>/<packagename>/<packageversion>/ exists,
-	  then all *.patch files in this directory will be applied.
-
-	  Otherwise, if the directory <global-patch-dir>/<packagename>
-	  exists, then all *.patch files in the directory will be
-	  applied.
-
-	  The hash files are looked up similarly to the patches.
-
-menu "Advanced"
-
-config BR2_FORCE_HOST_BUILD
-	bool "Force the building of host dependencies"
-	help
-	  Build all available host dependencies, even if they are
-	  already installed on the system.
-
-	  This option can be used to ensure that the download cache of
-	  source archives for packages remain consistent between
-	  different build hosts.
-
-	  This option will increase build time.
-
-config BR2_DOWNLOAD_FORCE_CHECK_HASHES
-	bool "Force all downloads to have a valid hash"
-	help
-	  Say 'y' here to enforce downloads to have at least one valid
-	  hash (and of course, that all hashes be valid).
-
-	  By default, Buildroot checks hashes of all packages
-	  downloaded, except those for which a custom version is
-	  used.
-
-	  With this option turned on, Buildroot will check hashes of
-	  all packages, including those that use a custom version. In
-	  order to provide hashes for such packages, place additional
-	  hash files in BR2_GLOBAL_PATCH_DIR directories.
-
-config BR2_REPRODUCIBLE
-	bool "Make the build reproducible (experimental)"
-	# SOURCE_DATE_EPOCH support in toolchain-wrapper requires GCC 4.4
-	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_4
-	help
-	  This option will remove all sources of non-reproducibility
-	  from the build process. For a given Buildroot configuration,
-	  this allows to generate exactly identical binaries from one
-	  build to the other, including on different machines.
-
-	  The current implementation is restricted to builds with the
-	  same output directory. Many (absolute) paths are recorded in
-	  intermediary files, and it is very likely that some of these
-	  paths leak into the target rootfs. If you build with the
-	  same O=... path, however, the result is identical.
-
-	  This is labeled as an experimental feature, as not all
-	  packages behave properly to ensure reproducibility.
-
-config BR2_PER_PACKAGE_DIRECTORIES
-	bool "Use per-package directories (experimental)"
-	help
-	  This option will change the build process of Buildroot
-	  package to use per-package target and host directories.
-
-	  This is useful for two related purposes:
-
-	    - Cleanly isolate the build of each package, so that a
-	      given package only "sees" the dependencies it has
-	      explicitly expressed, and not other packages that may
-	      have by chance been built before.
-
-	    - Enable top-level parallel build.
-
-	  This is labeled as an experimental feature, as not all
-	  packages behave properly with per-package directories.
+endif # BR2_LINUX_KERNEL
 
 endmenu
-
-config BR2_TIME_BITS_64
-	bool "Build Y2038-ready code"
-	depends on BR2_TOOLCHAIN_USES_GLIBC && !BR2_ARCH_IS_64
-	help
-	  This option will pass -D_TIME_BITS=64 in the compiler flags
-	  to ensure the glibc C library uses a 64-bit representation
-	  for time_t and other time types, which ensures that
-	  programs/libraries will correctly handle time past year
-	  2038.
-
-	  This option only has an effect with glibc >= 2.34, as
-	  earlier glibc versions did not have support for 64-bit
-	  time_t.
-
-comment "Security Hardening Options"
-
-config BR2_PIC_PIE_ARCH_SUPPORTS
-	bool
-	default y
-	# Microblaze glibc toolchains don't work with PIC/PIE enabled
-	depends on !BR2_microblaze
-	# Nios2 toolchains produce non working binaries with -fPIC
-	depends on !BR2_nios2
-
-config BR2_PIC_PIE
-	bool "Build code with PIC/PIE"
-	default y
-	depends on BR2_PIC_PIE_ARCH_SUPPORTS
-	depends on BR2_SHARED_LIBS
-	depends on BR2_TOOLCHAIN_SUPPORTS_PIE
-	help
-	  Generate Position-Independent Code (PIC) and link
-	  Position-Independent Executables (PIE).
-
-comment "PIC/PIE needs a toolchain w/ PIE"
-	depends on BR2_PIC_PIE_ARCH_SUPPORTS
-	depends on BR2_SHARED_LIBS
-	depends on !BR2_TOOLCHAIN_SUPPORTS_PIE
-
-choice
-	bool "Stack Smashing Protection"
-	default BR2_SSP_ALL if BR2_ENABLE_SSP # legacy
-	default BR2_SSP_STRONG if BR2_TOOLCHAIN_HAS_SSP_STRONG
-	default BR2_SSP_REGULAR
-	depends on BR2_TOOLCHAIN_HAS_SSP
-	help
-	  Enable stack smashing protection support using GCC's
-	  -fstack-protector option family.
-
-	  See
-	  http://www.linuxfromscratch.org/hints/downloads/files/ssp.txt
-	  for details.
-
-	  Note that this requires the toolchain to have SSP support.
-	  This is always the case for glibc and eglibc toolchain, but is
-	  optional in uClibc toolchains.
-
-config BR2_SSP_NONE
-	bool "None"
-	help
-	  Disable stack-smashing protection.
-
-config BR2_SSP_REGULAR
-	bool "-fstack-protector"
-	help
-	  Emit extra code to check for buffer overflows, such as stack
-	  smashing attacks. This is done by adding a guard variable to
-	  functions with vulnerable objects. This includes functions
-	  that call alloca, and functions with buffers larger than 8
-	  bytes. The guards are initialized when a function is entered
-	  and then checked when the function exits. If a guard check
-	  fails, an error message is printed and the program exits.
-
-config BR2_SSP_STRONG
-	bool "-fstack-protector-strong"
-	depends on BR2_TOOLCHAIN_HAS_SSP_STRONG
-	help
-	  Like -fstack-protector but includes additional functions to be
-	  protected - those that have local array definitions, or have
-	  references to local frame addresses.
-
-	  -fstack-protector-strong officially appeared in gcc 4.9, but
-	  some vendors have backported -fstack-protector-strong to older
-	  versions of gcc.
-
-config BR2_SSP_ALL
-	bool "-fstack-protector-all"
-	help
-	  Like -fstack-protector except that all functions are
-	  protected. This option might have a significant performance
-	  impact on the compiled binaries.
-
-endchoice
-
-config BR2_SSP_OPTION
-	string
-	default "-fstack-protector"        if BR2_SSP_REGULAR
-	default "-fstack-protector-strong" if BR2_SSP_STRONG
-	default "-fstack-protector-all"    if BR2_SSP_ALL
-
-comment "Stack Smashing Protection needs a toolchain w/ SSP"
-	depends on !BR2_TOOLCHAIN_HAS_SSP
-
-choice
-	bool "RELRO Protection"
-	default BR2_RELRO_FULL if BR2_TOOLCHAIN_SUPPORTS_PIE
-	default BR2_RELRO_PARTIAL
-	depends on BR2_SHARED_LIBS
-	help
-	  Enable a link-time protection know as RELRO (RELocation Read
-	  Only) which helps to protect from certain type of exploitation
-	  techniques altering the content of some ELF sections.
-
-config BR2_RELRO_NONE
-	bool "None"
-	help
-	  Disables Relocation link-time protections.
-
-config BR2_RELRO_PARTIAL
-	bool "Partial"
-	help
-	  This option makes the dynamic section not writeable after
-	  initialization (with almost no performance penalty).
-
-config BR2_RELRO_FULL
-	bool "Full"
-	depends on BR2_PIC_PIE_ARCH_SUPPORTS
-	depends on BR2_TOOLCHAIN_SUPPORTS_PIE
-	select BR2_PIC_PIE
-	help
-	  This option includes the partial configuration, but also marks
-	  the GOT as read-only at the cost of initialization time during
-	  program loading, i.e every time an executable is started.
-
-comment "RELRO Full needs a toolchain w/ PIE"
-	depends on BR2_PIC_PIE_ARCH_SUPPORTS
-	depends on !BR2_TOOLCHAIN_SUPPORTS_PIE
-
-endchoice
-
-comment "RELocation Read Only (RELRO) needs shared libraries"
-	depends on !BR2_SHARED_LIBS
-
-config BR2_FORTIFY_SOURCE_ARCH_SUPPORTS
-	bool
-	default y
-	# Microblaze glibc toolchains don't work with Fortify Source enabled
-	depends on !BR2_microblaze
-
-choice
-	bool "Buffer-overflow Detection (FORTIFY_SOURCE)"
-	default BR2_FORTIFY_SOURCE_1
-	depends on BR2_FORTIFY_SOURCE_ARCH_SUPPORTS
-	depends on BR2_TOOLCHAIN_USES_GLIBC
-	depends on !BR2_OPTIMIZE_0
-	help
-	  Enable the _FORTIFY_SOURCE macro which introduces additional
-	  checks to detect buffer-overflows in the following standard
-	  library functions: memcpy, mempcpy, memmove, memset, strcpy,
-	  stpcpy, strncpy, strcat, strncat, sprintf, vsprintf, snprintf,
-	  vsnprintf, gets.
-
-	  NOTE: This feature requires an optimization level of s/1/2/3/g
-
-	  Support for this feature has been present since GCC 4.x.
-
-config BR2_FORTIFY_SOURCE_NONE
-	bool "None"
-	help
-	  Disables additional checks to detect buffer-overflows.
-
-config BR2_FORTIFY_SOURCE_1
-	bool "Conservative"
-	# gcc bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61164
-	depends on !BR2_TOOLCHAIN_BUILDROOT || BR2_TOOLCHAIN_GCC_AT_LEAST_6
-	help
-	  This option sets _FORTIFY_SOURCE to 1 and only introduces
-	  checks that shouldn't change the behavior of conforming
-	  programs.  Adds checks at compile-time only.
-
-config BR2_FORTIFY_SOURCE_2
-	bool "Aggressive"
-	# gcc bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61164
-	depends on !BR2_TOOLCHAIN_BUILDROOT || BR2_TOOLCHAIN_GCC_AT_LEAST_6
-	help
-	  This option sets _FORTIFY_SOURCE to 2 and some more
-	  checking is added, but some conforming programs might fail.
-	  Also adds checks at run-time (detected buffer overflow
-	  terminates the program)
-
-config BR2_FORTIFY_SOURCE_3
-	bool "Extended"
-	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_12
-	help
-	  This option sets _FORTIFY_SOURCE to 3 and even more
-	  checking is added compared to level 2. Extends checks at
-	  run-time that can introduce an additional performance
-	  overhead.
-
-endchoice
-
-comment "Fortify Source needs a glibc toolchain and optimization"
-	depends on BR2_FORTIFY_SOURCE_ARCH_SUPPORTS
-	depends on (!BR2_TOOLCHAIN_USES_GLIBC || BR2_OPTIMIZE_0)
-endmenu
-
-source "system/Config.in"
-
-source "linux/Config.in"
-
-source "package/Config.in"
-
-source "fs/Config.in"
-
-source "boot/Config.in"
-
-source "package/Config.in.host"
-
-source "Config.in.legacy"
-
-# br2-external menus definitions
-source "$BR2_BASE_DIR/.br2-external.in.menus"
