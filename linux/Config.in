@@ -4,6 +4,10 @@ config BR2_LINUX_KERNEL
 	bool "Linux Kernel"
 	select BR2_PACKAGE_HOST_KMOD # Unconditional, even if modules not enabled
 	select BR2_PACKAGE_HOST_IMAGEMAGICK if BR2_LINUX_KERNEL_CUSTOM_LOGO_PATH != ""
+	# Rust support needs those packages
+	select BR2_PACKAGE_HOST_CURL		if !BR2_mipsel
+	select BR2_PACKAGE_HOST_RUSTC		if !BR2_mipsel
+	select BR2_PACKAGE_HOST_RUST_BINDGEN	if !BR2_mipsel
 	help
 	  Enable this option if you want to build a Linux kernel for
 	  your embedded device
@@ -28,8 +32,8 @@ choice
 	prompt "Kernel version"
 
 config BR2_LINUX_KERNEL_LATEST_VERSION
-	bool "Latest version (6.11)"
-	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_6_11 if BR2_KERNEL_HEADERS_AS_KERNEL
+	bool "Latest version (6.12)"
+	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_6_12 if BR2_KERNEL_HEADERS_AS_KERNEL
 
 config BR2_LINUX_KERNEL_LATEST_CIP_VERSION
 	bool "Latest CIP SLTS version (5.10.162-cip24)"
@@ -134,7 +138,7 @@ config BR2_LINUX_KERNEL_CUSTOM_REPO_GIT_SUBMODULES
 
 config BR2_LINUX_KERNEL_VERSION
 	string
-	default "6.11.11" if BR2_LINUX_KERNEL_LATEST_VERSION
+	default "6.12.12" if BR2_LINUX_KERNEL_LATEST_VERSION
 	default "5.10.162-cip24" if BR2_LINUX_KERNEL_LATEST_CIP_VERSION
 	default "5.10.162-cip24-rt10" if BR2_LINUX_KERNEL_LATEST_CIP_RT_VERSION
 	default BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE \
@@ -168,6 +172,12 @@ config BR2_LINUX_KERNEL_USE_DEFCONFIG
 
 config BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG
 	bool "Use the architecture default configuration"
+	# We know that the default configuration on some architectures
+	# requires host-openssl, so select it for the latest kernel
+	# version. This is mainly needed to fix autobuilder testing.
+	select BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL if \
+	       BR2_LINUX_KERNEL_LATEST_VERSION && \
+	       (BR2_aarch64 || BR2_aarch64_be || BR2_arcle || BR2_arceb || BR2_sparc || BR2_x86_64)
 	help
 	  This option will use the default configuration for the
 	  selected architecture. I.e, it is equivalent to running
