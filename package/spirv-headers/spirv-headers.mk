@@ -3,9 +3,9 @@
 # spirv-headers
 #
 ################################################################################
-# batocera - update 1.3.297 has not been tagged yet, use the hash
+# batocera - bump
 # Keep in sync with spirv-tools version
-SPIRV_HEADERS_VERSION = a62b032007b2e7a69f24a195cbfbd0cf22d31bb0
+SPIRV_HEADERS_VERSION = vulkan-sdk-1.4.309.0
 #SPIRV_HEADERS_SITE = $(call github,KhronosGroup,SPIRV-Headers,vulkan-sdk-$(SPIRV_HEADERS_VERSION))
 SPIRV_HEADERS_SITE = $(call github,KhronosGroup,SPIRV-Headers,$(SPIRV_HEADERS_VERSION))
 SPIRV_HEADERS_LICENSE = MIT

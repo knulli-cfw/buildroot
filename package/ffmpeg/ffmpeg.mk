@@ -4,15 +4,17 @@
 #
 ################################################################################
 # batocera - upgrade to v7.1 (removed patches) so most packages use this version
-# maintain 7.0.2 for RPi 4/5 & RK3588 boards for hwaccel support
+# use a specialist repo for the RPi 4/5 & 
 # buildroot 4.4.x moved to a batocera package
-ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
-    FFMPEG_VERSION = 7.0.2
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
+    FFMPEG_VERSION = 6dbf87aefd7f491210abe1e043a1c228fa1439a0
+    FFMPEG_SITE = $(call github,jc-kynesim,rpi-ffmpeg,$(FFMPEG_VERSION))
 else
-    FFMPEG_VERSION = 7.1
+    FFMPEG_VERSION = 7.1.1
+    FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
+    FFMPEG_SITE = https://ffmpeg.org/releases
 endif
-FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
-FFMPEG_SITE = https://ffmpeg.org/releases
+
 FFMPEG_INSTALL_STAGING = YES
 
 FFMPEG_LICENSE = LGPL-2.1+, libjpeg license
@@ -65,6 +67,12 @@ FFMPEG_CONF_OPTS += --enable-libpulse
 FFMPEG_DEPENDENCIES += pulseaudio
 endif
 
+# batocera - ensure rockchip hwaccel is enabled
+ifeq ($(BR2_PACKAGE_ROCKCHIP_MPP),y)
+FFMPEG_CONF_OPTS += --enable-rkmpp --enable-version3
+FFMPEG_DEPENDENCIES += rockchip-mpp
+endif
+
 # batocera - force dash demuxer & libxml2 for Kodi
 FFMPEG_CONF_OPTS += --enable-demuxer=dash
 FFMPEG_CONF_OPTS += --enable-libxml2
@@ -111,6 +119,10 @@ endif
 ifeq ($(BR2_PACKAGE_LIBV4L),y)
 FFMPEG_DEPENDENCIES += libv4l
 FFMPEG_CONF_OPTS += --enable-libv4l2
+# batocera - rk3568 patches include --enable-v4l2-request support
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_RK3568),y)
+FFMPEG_CONF_OPTS += --enable-v4l2-request
+endif
 else
 FFMPEG_CONF_OPTS += --disable-libv4l2
 endif
@@ -560,6 +572,12 @@ FFMPEG_CONF_OPTS += --enable-vulkan --enable-libshaderc
 FFMPEG_DEPENDENCIES += vulkan-headers vulkan-loader shaderc
 else
 FFMPEG_CONF_OPTS += --disable-vulkan
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_LIBLC3),y)
+FFMPEG_CONF_OPTS += --enable-liblc3
+FFMPEG_DEPENDENCIES += liblc3
 endif
 
 ifeq ($(BR2_mips)$(BR2_mipsel)$(BR2_mips64)$(BR2_mips64el),y)

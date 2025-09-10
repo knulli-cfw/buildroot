@@ -768,7 +768,7 @@ endif
 	mkdir -p $(TARGET_DIR)/etc
 	( \
 		echo "NAME=Batocera.linux"; \
-		echo 'PRETTY_NAME=\"Batocera.linux $(BATOCERA_SYSTEM_VERSION)\"'; \
+		echo 'PRETTY_NAME="Batocera.linux $(BATOCERA_SYSTEM_VERSION)"'; \
 		echo "VERSION=$(BATOCERA_SYSTEM_VERSION)"; \
 		echo "ID=buildroot"; \
 		echo "VERSION_ID=$(BR2_VERSION)"; \

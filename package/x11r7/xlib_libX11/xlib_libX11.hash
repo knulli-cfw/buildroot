@@ -1,5 +1,5 @@
-# From https://lists.x.org/archives/xorg-announce/2024-July/003521.html
-sha256  2b3b3dad9347db41dca56beb7db5878f283bde1142f04d9f8e478af435dfdc53  libX11-1.8.10.tar.xz
-sha512  f801f5b77cbc55074f73dc95b29fff7b5e1b13b99641f6e397788ad9f31a29793ed4e8e5bd373122c790ef90627e8f9d6d5e271051c1767a479a85c55cd82bc1  libX11-1.8.10.tar.xz
+# From https://lists.x.org/archives/xorg-announce/2025-March/003587.html
+sha256  fa026f9bb0124f4d6c808f9aef4057aad65e7b35d8ff43951cef0abe06bb9a9a  libX11-1.8.12.tar.xz
+sha512  cb7a284d9081a8b67f7d8568d56dc403a4b787e46ac497b07768d236084c01f80f4ea2ebd814f950ac9738adc3baea3912932fc333858195c4f8217744b6f730  libX11-1.8.12.tar.xz
 # Locally computed
 sha256  2e7012a140f000735a7172674a2d314398d79622444fba65d108b029b29ab283  COPYING

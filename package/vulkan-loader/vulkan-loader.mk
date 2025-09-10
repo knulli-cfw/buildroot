@@ -3,8 +3,8 @@
 # vulkan-loader
 #
 ################################################################################
-
-VULKAN_LOADER_VERSION = v1.4.304
+# batocera (update)
+VULKAN_LOADER_VERSION = v1.4.309
 VULKAN_LOADER_SITE = $(call github,KhronosGroup,Vulkan-Loader,$(VULKAN_LOADER_VERSION))
 VULKAN_LOADER_LICENSE = Apache-2.0
 VULKAN_LOADER_LICENSE_FILES = LICENSE.txt

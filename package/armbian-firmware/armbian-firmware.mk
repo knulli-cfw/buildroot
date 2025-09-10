@@ -3,8 +3,8 @@
 # armbian-firmware
 #
 ################################################################################
-
-ARMBIAN_FIRMWARE_VERSION = 5d685ad233b4dfd03a4d025fa0061f6b0f850cb3
+# batocera - update to Commits on Jul 6, 2025
+ARMBIAN_FIRMWARE_VERSION = f80f5986fbc49ab91fe4342fd896fbd47e851e25
 ARMBIAN_FIRMWARE_SITE = https://github.com/armbian/firmware
 ARMBIAN_FIRMWARE_SITE_METHOD = git
 

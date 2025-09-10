@@ -3,21 +3,11 @@
 # mesa3d
 #
 ################################################################################
-# batocera (update) - patch 5 not needed
+# batocera (update) - patch 1 & 5 not needed
 # When updating the version, please also update mesa3d-headers
 # also update glslang to the latest stable version
 
-# RPi4/Panfrost workaround until - https://gitlab.freedesktop.org/mesa/mesa/-/issues/10306 fixed
-ifneq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_ANY)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_BCM2712)$(BR2_PACKAGE_BATOCERA_TARGET_SM8250)$(BR2_PACKAGE_BATOCERA_TARGET_T527)$(BR2_PACKAGE_BATOCERA_TARGET_RK3568),y)
-    MESA3D_VERSION = 23.2.1
-    GLVND_TRUE = true
-    GLVND_FALSE = false
-else
-    MESA3D_VERSION = 25.0.0
-    GLVND_TRUE = enabled
-    GLVND_FALSE = disabled
-endif
-
+MESA3D_VERSION = 25.1.9
 MESA3D_SOURCE = mesa-$(MESA3D_VERSION).tar.xz
 MESA3D_SITE = https://archive.mesa3d.org
 MESA3D_LICENSE = MIT, SGI, Khronos
@@ -29,7 +19,7 @@ MESA3D_INSTALL_STAGING = YES
 
 MESA3D_PROVIDES =
 
-# batocera - add host-python-pyyaml & lua
+# batocera - add lua & host-libcurl
 MESA3D_DEPENDENCIES = \
 	host-bison \
 	host-flex \
@@ -38,38 +28,21 @@ MESA3D_DEPENDENCIES = \
 	expat \
 	libdrm \
 	lua \
-	zlib
+	zlib \
+	host-libcurl
+
+MESA3D_CONF_OPTS = \
+	    -Dgallium-rusticl=false \
+		-Dmicrosoft-clc=disabled
 
 # batocera
 ifeq ($(BR2_PACKAGE_DIRECTX_HEADERS),y)
 MESA3D_DEPENDENCIES += directx-headers
 endif
 
-# batocera - remove redundant -Dgallium-omx option for newer mesa
-ifeq ($(MESA3D_VERSION),23.2.1)
-    MESA3D_CONF_OPTS = \
-	    -Dgallium-omx=disabled \
-	    -Dgallium-rusticl=false \
-		-Dmicrosoft-clc=disabled \
-		-Dopencl-spirv=false \
-		-Dpower8=disabled
-else
-    MESA3D_CONF_OPTS = \
-	    -Dgallium-rusticl=false \
-		-Dmicrosoft-clc=disabled \
-		-Dpower8=disabled
-endif
-
 # batocera - remove redundant dri3 option for newer mesa
 ifeq ($(BR2_PACKAGE_MESA3D_DRIVER)$(BR2_PACKAGE_XORG7),yy)
-    ifeq ($(MESA3D_VERSION),23.2.1)
-    MESA3D_CONF_OPTS += -Ddri3=enabled
-	endif
 MESA3D_DEPENDENCIES += xlib_libxshmfence
-else
-    ifeq ($(MESA3D_VERSION),23.2.1)
-    MESA3D_CONF_OPTS += -Ddri3=disabled
-	endif
 endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_LLVM),y)
@@ -80,20 +53,17 @@ ifeq ($(BR2_PACKAGE_LLVM_RTTI),y)
 MESA3D_CONF_OPTS += -Dcpp_rtti=true
 else
 MESA3D_CONF_OPTS += -Dcpp_rtti=false
+HOST_MESA3D_CONF_OPTS += -Dcpp_rtti=false
 endif
 else
 # Avoid automatic search of llvm-config
 MESA3D_CONF_OPTS += -Dllvm=disabled
+HOST_MESA3D_CONF_OPTS += -Dcpp_rtti=false
 endif
 
-# Disable opencl-icd: OpenCL lib will be named libOpenCL instead of
-# libMesaOpenCL and CL headers are installed
 ifeq ($(BR2_PACKAGE_MESA3D_OPENCL),y)
 MESA3D_PROVIDES += libopencl
 MESA3D_DEPENDENCIES += clang libclc
-MESA3D_CONF_OPTS += -Dgallium-opencl=standalone
-else
-MESA3D_CONF_OPTS += -Dgallium-opencl=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_NEEDS_ELFUTILS),y)
@@ -103,21 +73,16 @@ endif
 ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX),y)
 # Disable-mangling not yet supported by meson build system.
 # glx:
-#  dri          : dri based GLX requires at least one DRI driver || dri based GLX requires shared-glapi
+#  dri          : dri based GLX requires at least one DRI driver
 #  xlib         : xlib conflicts with any dri driver
 # Always enable glx-direct; without it, many GLX applications don't work.
+# batocera - gallium-xa is deprecated
 MESA3D_CONF_OPTS += \
 	-Dglx=dri \
 	-Dglx-direct=true
-ifeq ($(BR2_PACKAGE_MESA3D_NEEDS_XA),y)
-MESA3D_CONF_OPTS += -Dgallium-xa=enabled
-else
-MESA3D_CONF_OPTS += -Dgallium-xa=disabled
-endif
 else
 MESA3D_CONF_OPTS += \
-	-Dglx=disabled \
-	-Dgallium-xa=disabled
+	-Dglx=disabled
 endif
 
 ifeq ($(BR2_ARM_CPU_HAS_NEON),y)
@@ -129,20 +94,21 @@ endif
 # Drivers
 
 #Gallium Drivers
+# batocera - remove kmsro
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_CROCUS)   += crocus
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ETNAVIV)  += etnaviv
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO) += freedreno
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_I915)     += i915
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS)     += iris
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_LIMA)     += lima
-MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_KMSRO)    += kmsro
+MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_LLVMPIPE) += llvmpipe
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_NOUVEAU)  += nouveau
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST) += panfrost
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_R300)     += r300
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_R600)     += r600
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_RADEONSI) += radeonsi
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_SVGA)     += svga
-MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_SWRAST)   += swrast
+MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_SOFTPIPE) += softpipe
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_TEGRA)    += tegra
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_V3D)      += v3d
 MESA3D_GALLIUM_DRIVERS-$(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4)      += vc4
@@ -172,6 +138,7 @@ MESA3D_VIDEO_CODECS-$(BR2_PACKAGE_MESA3D_VIDEO_CODEC_VP9DEC)        += vp9dec
 
 # batocera
 # Vulkan Layers - helps with multi-GPU switching
+# batocera - shared-glapi is deprecated
 ifeq ($(BR2_PACKAGE_WAYLAND)$(BR2_PACKAGE_MESA3D_NEEDS_X11),yy)
 MESA3D_DEPENDENCIES += python3 host-glslang
 MESA3D_CONF_OPTS += -Dvulkan-layers=device-select,overlay
@@ -183,7 +150,6 @@ MESA3D_CONF_OPTS += \
 	-Dgallium-extra-hud=false
 else
 MESA3D_CONF_OPTS += \
-	-Dshared-glapi=enabled \
 	-Dgallium-drivers=$(subst $(space),$(comma),$(MESA3D_GALLIUM_DRIVERS-y)) \
 	-Dgallium-extra-hud=true
 endif
@@ -194,12 +160,20 @@ endif
 
 # batocera - add spirv-tools for Mesa 25
 ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_INTEL),y)
-MESA3D_DEPENDENCIES += host-python-ply spirv-tools
+MESA3D_CONF_OPTS += -Dmesa-clc=system -Dprecomp-compiler=system
+MESA3D_DEPENDENCIES += host-python-ply host-mesa3d spirv-tools
 endif
 
 # batocera - add -Dmesa-clc=system & spirv-tools for Mesa 25
 ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS),y)
 MESA3D_CONF_OPTS += -Dintel-clc=system -Dmesa-clc=system
+MESA3D_DEPENDENCIES += host-mesa3d spirv-tools
+endif
+
+# batocera - add mesa-clc=system for panfrost
+ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST),y)
+MESA3D_CONF_OPTS += -Dmesa-clc=system
+MESA3D_CONF_OPTS += -Dprecomp-compiler=system
 MESA3D_DEPENDENCIES += host-mesa3d spirv-tools
 endif
 
@@ -223,11 +197,7 @@ endif
 
 # APIs
 
-ifeq ($(BR2_PACKAGE_MESA3D_OSMESA_GALLIUM),y)
-MESA3D_CONF_OPTS += -Dosmesa=true
-else
-MESA3D_CONF_OPTS += -Dosmesa=false
-endif
+# batocera - osmesa is deprecated
 
 # Always enable OpenGL:
 #   - Building OpenGL ES without OpenGL is not supported, so always keep opengl enabled.
@@ -377,12 +347,12 @@ endif
 ifeq ($(BR2_PACKAGE_LIBGLVND),y)
     ifneq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX)$(BR2_PACKAGE_MESA3D_OPENGL_EGL),)
         MESA3D_DEPENDENCIES += libglvnd
-        MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_TRUE)
+        MESA3D_CONF_OPTS += -Dglvnd=enabled
     else
-        MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_FALSE)
+        MESA3D_CONF_OPTS += -Dglvnd=disabled
     endif
 else
-    MESA3D_CONF_OPTS += -Dglvnd=$(GLVND_FALSE)
+    MESA3D_CONF_OPTS += -Dglvnd=disabled
 endif
 
 # batocera - add host build
@@ -394,36 +364,63 @@ HOST_MESA3D_DEPENDENCIES = \
 	host-python-pyyaml \
 	host-expat \
 	libdrm \
+	host-libdrm \
 	host-libclc \
 	host-spirv-tools \
 	host-spirv-llvm-translator \
-	host-zlib
+	host-zlib \
+	host-glslang \
+	host-rustc \
+	host-rust-bindgen \
+	host-libcurl \
+	host-cbindgen
 
-ifeq ($(MESA3D_VERSION),23.2.1)
-    HOST_MESA3D_CONF_OPTS = \
-		-Dgallium-omx=disabled \
-		-Dpower8=disabled \
-		-Dgallium-drivers="" \
-		-Dvulkan-drivers="" \
-		-Dglx=disabled \
-		-Dplatforms="" \
-		-Dintel-clc=enabled \
-		-Dllvm=enabled \
-		-Dinstall-intel-clc=true
-else
-    HOST_MESA3D_CONF_OPTS = \
-		-Dpower8=disabled \
-		-Dgallium-drivers="" \
-		-Dvulkan-drivers="" \
-		-Dglx=disabled \
-		-Dplatforms="" \
-		-Dintel-clc=enabled \
-		-Dllvm=enabled \
-		-Dinstall-intel-clc=true \
-		-Dmesa-clc=enabled \
-		-Dinstall-mesa-clc=true
+HOST_MESA3D_CONF_OPTS += \
+	-Dgallium-drivers="" \
+	-Dglx=disabled \
+	-Dplatforms="" \
+	-Dllvm=enabled \
+	-Dmesa-clc=enabled \
+	-Dinstall-mesa-clc=true \
+	-Dgallium-rusticl=false
+
+# workaround for rust subprojects
+HOST_MESA3D_CONF_OPTS += --wrap-mode=default
+
+ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_PANFROST),y)
+# batocera - needs driver to get precomp binary
+HOST_MESA3D_CONF_OPTS += \
+	-Dvulkan-drivers=$(subst $(space),$(comma),$(MESA3D_VULKAN_DRIVERS-y)) \
+	-Dgallium-drivers=$(subst $(space),$(comma),$(MESA3D_GALLIUM_DRIVERS-y)) \
+	-Dprecomp-compiler=enabled \
+	-Dinstall-precomp-compiler=true
 endif
 
+ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_IRIS),y)
+HOST_MESA3D_CONF_OPTS += \
+    -Dinstall-intel-clc=true \
+	-Dintel-clc=enabled
+endif
+
+# batocera - since meson cannot download files
+# we download them into the packagecache folder
+# details in the .wrap files
+define MESA3D_GET_RUST_SUBMODULES
+	mkdir -p $(@D)/subprojects/packagecache
+	( \
+		for WRAP_NAME in syn unicode-ident quote proc-macro2 paste; do \
+			WRAP_FILE="$(@D)/subprojects/$$WRAP_NAME.wrap"; \
+			SOURCE_FILENAME=$$(sed -n 's/^source_filename[[:space:]]*=[[:space:]]*//p' $$WRAP_FILE); \
+			SOURCE_URL=$$(sed -n 's/^source_url[[:space:]]*=[[:space:]]*//p' $$WRAP_FILE); \
+			echo "Downloading $$WRAP_NAME crate: $$SOURCE_FILENAME from $$SOURCE_URL"; \
+			$(HOST_DIR)/usr/bin/curl --fail -L -o "$(@D)/subprojects/packagecache/$$SOURCE_FILENAME" "$$SOURCE_URL"; \
+		done \
+	)
+endef
+
+# batocera
+MESA3D_PRE_CONFIGURE_HOOKS += MESA3D_GET_RUST_SUBMODULES
+HOST_MESA3D_PRE_CONFIGURE_HOOKS += MESA3D_GET_RUST_SUBMODULES
+
 $(eval $(meson-package))
-# batocera - add host package
 $(eval $(host-meson-package))

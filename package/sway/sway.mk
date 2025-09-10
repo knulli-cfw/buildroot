@@ -3,8 +3,12 @@
 # sway
 #
 ################################################################################
-# batocera (update)
+# batocera (update) - RPi4 legacy sway for Mesa regression
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
 SWAY_VERSION = 1.9
+else
+SWAY_VERSION = 1.10.1
+endif
 SWAY_SITE = https://github.com/swaywm/sway/releases/download/$(SWAY_VERSION)
 SWAY_LICENSE = MIT
 SWAY_LICENSE_FILES = LICENSE
@@ -21,10 +25,13 @@ SWAY_CONF_OPTS = \
 # batocera - We don't want systemd
 #-Dsd-bus-provider=libsystemd
 
+# batocera - no longer an option unless sway 1.9
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
 ifeq ($(BR2_PACKAGE_WLROOTS_X11),y)
 SWAY_CONF_OPTS += -Dxwayland=enabled
 else
 SWAY_CONF_OPTS += -Dxwayland=disabled
+endif
 endif
 
 ifeq ($(BR2_PACKAGE_GDK_PIXBUF),y)

@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera - bump
-GST1_PLUGINS_BASE_VERSION = 1.24.10
+GST1_PLUGINS_BASE_VERSION = 1.26.4
 GST1_PLUGINS_BASE_SOURCE = gst-plugins-base-$(GST1_PLUGINS_BASE_VERSION).tar.xz
 GST1_PLUGINS_BASE_SITE = https://gstreamer.freedesktop.org/src/gst-plugins-base
 GST1_PLUGINS_BASE_INSTALL_STAGING = YES
@@ -16,9 +16,9 @@ GST1_PLUGINS_BASE_CFLAGS = $(TARGET_CFLAGS) -std=gnu99
 GST1_PLUGINS_BASE_CONF_OPTS = \
 	-Dexamples=disabled \
 	-Dtests=disabled \
-	-Dgobject-cast-checks=disabled \
-	-Dglib-asserts=disabled \
-	-Dglib-checks=disabled \
+	-Dglib_debug=disabled \
+	-Dglib_assert=false \
+	-Dglib_checks=false \
 	-Dqt5=disabled \
 	-Ddoc=disabled
 

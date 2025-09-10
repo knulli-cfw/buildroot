@@ -33,9 +33,10 @@ ifeq ($(BR2_PACKAGE_LZ4_PROGS),y)
 LZ4_DIRS += programs
 endif
 
+# batcoera fix prefix directory - add PREFIX=/usr 
 define LZ4_BUILD_CMDS
 	$(foreach dir,$(LZ4_DIRS),\
-		$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) $(LZ4_MAKE_OPTS) \
+		$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) PREFIX=/usr $(LZ4_MAKE_OPTS) \
 			-C $(@D)/$(dir)
 	)
 endef

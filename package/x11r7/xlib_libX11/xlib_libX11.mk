@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera - bump
-XLIB_LIBX11_VERSION = 1.8.10
+XLIB_LIBX11_VERSION = 1.8.12
 XLIB_LIBX11_SOURCE = libX11-$(XLIB_LIBX11_VERSION).tar.xz
 XLIB_LIBX11_SITE = https://xorg.freedesktop.org/archive/individual/lib
 XLIB_LIBX11_LICENSE = MIT
@@ -29,10 +29,9 @@ HOST_XLIB_LIBX11_DEPENDENCIES = \
 	host-xlib_libXdmcp \
 	host-xorgproto
 
+# batocera - remove --disable-specs --without-perl
 XLIB_LIBX11_CONF_OPTS = \
-	--disable-malloc0returnsnull \
-	--disable-specs \
-	--without-perl
+	--disable-malloc0returnsnull
 
 HOST_XLIB_LIBX11_CONF_OPTS = \
 	--disable-specs \

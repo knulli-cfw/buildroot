@@ -3,8 +3,8 @@
 # libpng
 #
 ################################################################################
-
-LIBPNG_VERSION = 1.6.44
+# batocera - bump
+LIBPNG_VERSION = 1.6.47
 LIBPNG_SERIES = 16
 LIBPNG_SOURCE = libpng-$(LIBPNG_VERSION).tar.xz
 LIBPNG_SITE = http://downloads.sourceforge.net/project/libpng/libpng$(LIBPNG_SERIES)/$(LIBPNG_VERSION)

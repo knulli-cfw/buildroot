@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera - bump
-GST1_PLUGINS_GOOD_VERSION = 1.24.10
+GST1_PLUGINS_GOOD_VERSION = 1.26.4
 GST1_PLUGINS_GOOD_SOURCE = gst-plugins-good-$(GST1_PLUGINS_GOOD_VERSION).tar.xz
 GST1_PLUGINS_GOOD_SITE = https://gstreamer.freedesktop.org/src/gst-plugins-good
 GST1_PLUGINS_GOOD_LICENSE_FILES = COPYING
@@ -16,9 +16,9 @@ GST1_PLUGINS_GOOD_LDFLAGS = $(TARGET_LDFLAGS) $(TARGET_NLS_LIBS)
 GST1_PLUGINS_GOOD_CONF_OPTS = \
 	-Dexamples=disabled \
 	-Dtests=disabled \
-	-Dgobject-cast-checks=disabled \
-	-Dglib-asserts=disabled \
-	-Dglib-checks=disabled \
+	-Dglib_debug=disabled \
+	-Dglib_assert=false \
+	-Dglib_checks=false \
 	-Dasm=disabled \
 	-Ddirectsound=disabled \
 	-Dwaveform=disabled \

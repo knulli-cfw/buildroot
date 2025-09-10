@@ -41,6 +41,11 @@ LIBCLC_CONF_OPTS = \
 	-DCMAKE_CXX_COMPILER="$(CMAKE_HOST_CXX_COMPILER)" \
 	-DLLVM_CONFIG="$(HOST_DIR)/bin/llvm-config"
 
+ifeq ($(BR2_arm)$(BR2_aarch64),y)
+HOST_LIBCLC_CONF_OPTS += -DLIBCLC_TARGETS_TO_BUILD=""
+LIBCLC_CONF_OPTS += -DLIBCLC_TARGETS_TO_BUILD=""
+endif
+
 $(eval $(cmake-package))
 # batocera - add host package for host-mesa3d
 $(eval $(host-cmake-package))

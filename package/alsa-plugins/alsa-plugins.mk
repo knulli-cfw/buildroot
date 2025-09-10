@@ -14,10 +14,24 @@ ALSA_PLUGINS_DEPENDENCIES = host-pkgconf alsa-lib
 ALSA_PLUGINS_CONF_OPTS = \
 	--disable-jack \
 	--disable-usbstream \
-	--disable-libav \
 	--disable-maemo-plugin \
-	--disable-maemo-resource-manager \
-	--with-speex=no
+	--disable-maemo-resource-manager
+
+# batocera - enable a52 via ffmpeg
+ifeq ($(BR2_PACKAGE_FFMPEG_ENCODERS),y)
+ALSA_PLUGINS_CONF_OPTS += --enable-a52 --enable-libav
+ALSA_PLUGINS_DEPENDENCIES += ffmpeg
+else
+ALSA_PLUGINS_CONF_OPTS += --disable-a52 --disable-libav
+endif
+
+# batocera - enable speex
+ifeq ($(BR2_PACKAGE_SPEEX)$(BR2_PACKAGE_SPEEXDSP),yy)
+ALSA_PLUGINS_CONF_OPTS += --enable-speexdsp
+ALSA_PLUGINS_DEPENDENCIES += speex speexdsp
+else
+ALSA_PLUGINS_CONF_OPTS += --disable-speexdsp
+endif
 
 ifeq ($(BR2_PACKAGE_PULSEAUDIO),y)
 ALSA_PLUGINS_DEPENDENCIES += pulseaudio

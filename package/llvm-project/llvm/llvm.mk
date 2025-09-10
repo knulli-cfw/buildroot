@@ -127,8 +127,9 @@ HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_FFI=OFF
 LLVM_CONF_OPTS += -DLLVM_ENABLE_FFI=OFF
 
 # Disable terminfo database (needs ncurses libtinfo.so)
-HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
-LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
+# Batocera - no longer a valid option
+#HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
+#LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
 
 # Enable thread support
 HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_THREADS=ON
@@ -255,6 +256,8 @@ LLVM_CONF_OPTS += \
 	-DLLVM_ENABLE_PEDANTIC=ON \
 	-DLLVM_ENABLE_WERROR=OFF
 
+
+# batocera - remove LLVM_INCLUDE_GO_TESTS - not a valid option
 HOST_LLVM_CONF_OPTS += \
 	-DLLVM_BUILD_EXAMPLES=OFF \
 	-DLLVM_BUILD_DOCS=OFF \
@@ -264,9 +267,26 @@ HOST_LLVM_CONF_OPTS += \
 	-DLLVM_ENABLE_SPHINX=OFF \
 	-DLLVM_INCLUDE_EXAMPLES=OFF \
 	-DLLVM_INCLUDE_DOCS=OFF \
-	-DLLVM_INCLUDE_GO_TESTS=OFF \
 	-DLLVM_INCLUDE_TESTS=OFF \
 	-DLLVM_INCLUDE_BENCHMARKS=OFF
+
+# batocera - add perf & LLVMgold plugin options
+HOST_LLVM_CONF_OPTS += -DLLVM_USE_PERF=ON
+ifeq ($(BR2_arm),y)
+HOST_LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnueabihf/$(GCC_VERSION)/plugin/include
+else
+HOST_LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnu/$(GCC_VERSION)/plugin/include
+endif
+HOST_LLVM_DEPENDENCIES += host-gcc-final
+
+ifeq ($(BR2_x86_64),y)
+HOST_LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=ON
+else
+HOST_LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=OFF
+endif
+
+# batocera - add perf & LLVMgold plugin option
+# remove LLVM_INCLUDE_GO_TESTS - not a valid option
 LLVM_CONF_OPTS += \
 	-DLLVM_BUILD_EXAMPLES=OFF \
 	-DLLVM_BUILD_DOCS=OFF \
@@ -276,9 +296,21 @@ LLVM_CONF_OPTS += \
 	-DLLVM_ENABLE_SPHINX=OFF \
 	-DLLVM_INCLUDE_EXAMPLES=OFF \
 	-DLLVM_INCLUDE_DOCS=OFF \
-	-DLLVM_INCLUDE_GO_TESTS=OFF \
 	-DLLVM_INCLUDE_TESTS=OFF \
-	-DLLVM_INCLUDE_BENCHMARKS=OFF
+	-DLLVM_INCLUDE_BENCHMARKS=OFF \
+	-DLLVM_USE_PERF=ON
+
+ifeq ($(BR2_arm),y)
+LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnueabihf/$(GCC_VERSION)/plugin/include
+else
+LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnu/$(GCC_VERSION)/plugin/include
+endif
+
+ifeq ($(BR2_x86_64),y)
+LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=ON
+else
+LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=OFF
+endif
 
 # Copy llvm-config (host variant) to STAGING_DIR
 # llvm-config (host variant) returns include and lib directories

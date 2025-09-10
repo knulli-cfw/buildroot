@@ -67,7 +67,7 @@ comment "Wayland GDK backend needs an OpenGL EGL backend provided by mesa3d w/ h
 
 config BR2_PACKAGE_LIBGTK3_WAYLAND
 	bool "Wayland GDK backend"
-	default y if !BR2_PACKAGE_BATOCERA_TARGET_X86_ANY # batocera
+	default y if !BR2_PACKAGE_BATOCERA_TARGET_X86_64 # batocera
 	depends on BR2_PACKAGE_HAS_LIBEGL
 	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_17
 	select BR2_PACKAGE_WAYLAND

@@ -3,8 +3,8 @@
 # qt5base
 #
 ################################################################################
-
-QT5BASE_VERSION = 2b9835f5c9bcfe3105b60a8dd33c1db7d8611378
+# batocera - bump
+QT5BASE_VERSION = v5.15.16-lts-lgpl
 QT5BASE_SITE = $(QT5_SITE)/qtbase
 QT5BASE_SITE_METHOD = git
 QT5BASE_CPE_ID_VENDOR = qt

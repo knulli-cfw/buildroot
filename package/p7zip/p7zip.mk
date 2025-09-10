@@ -27,12 +27,17 @@ define P7ZIP_BUILD_CMDS
 		-C $(@D) 7z $(P7ZIP_TARGET)
 endef
 
-# batocera - install 7z too
+# batocera - install 7z and libraries too
 define P7ZIP_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bin/$(P7ZIP_TARGET) \
 		$(TARGET_DIR)/usr/bin/$(P7ZIP_TARGET)
 	$(INSTALL) -D -m 0755 $(@D)/bin/7z \
 		$(TARGET_DIR)/usr/bin/7z
+	$(INSTALL) -D -m 0755 $(@D)/bin/7z.so \
+		$(TARGET_DIR)/usr/bin/7z.so
+	mkdir -p $(TARGET_DIR)/usr/bin/Codecs
+	$(INSTALL) -D -m 0755 $(@D)/bin/Codecs/Rar.so \
+	    $(TARGET_DIR)/usr/bin/Codecs/Rar.so
 endef
 
 # batocera

@@ -4,16 +4,15 @@
 #
 ################################################################################
 # batocera bump - security fix
-XWAYLAND_VERSION = 24.1.3
+XWAYLAND_VERSION = 24.1.6
 XWAYLAND_SOURCE = xwayland-$(XWAYLAND_VERSION).tar.xz
 XWAYLAND_SITE = https://xorg.freedesktop.org/archive/individual/xserver
 XWAYLAND_LICENSE = MIT
 XWAYLAND_LICENSE_FILES = COPYING
 XWAYLAND_CPE_ID_VENDOR = x.org
 XWAYLAND_INSTALL_STAGING = YES
-# batocera - add mesa3d
+
 XWAYLAND_DEPENDENCIES = \
-    mesa3d \
 	libdrm \
 	pixman \
 	wayland \
@@ -25,6 +24,14 @@ XWAYLAND_DEPENDENCIES = \
 	xlib_libxshmfence \
 	xlib_xtrans \
 	xorgproto
+
+# batocera - add mesa3d-rpi4 / mesa3d
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
+XWAYLAND_DEPENDENCIES += mesa3d-rpi4
+else
+XWAYLAND_DEPENDENCIES += mesa3d
+endif
+
 # batocera - remove the -Dxwayland_eglstream=false option
 XWAYLAND_CONF_OPTS = \
 	-Ddri3=true \
@@ -89,5 +96,19 @@ XWAYLAND_DEPENDENCIES += libunwind
 else
 XWAYLAND_CONF_OPTS += -Dlibunwind=false
 endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_LIBDECOR),y)
+XWAYLAND_CONF_OPTS += -Dlibdecor=true
+XWAYLAND_DEPENDENCIES += libdecor
+else
+XWAYLAND_CONF_OPTS += -Dlibdecor=false
+endif
+
+# batocera
+ifeq ($(BR2_PACKAGE_XAPP_XKBCOMP),y)
+XWAYLAND_DEPENDENCIES += xapp_xkbcomp
+endif
+
 
 $(eval $(meson-package))

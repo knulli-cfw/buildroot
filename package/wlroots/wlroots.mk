@@ -3,8 +3,12 @@
 # wlroots
 #
 ################################################################################
-# batocera (update) - remove 0001 patch
+# batocera (update) - remove 0001 patch (RPi4 needs legacy version)
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
 WLROOTS_VERSION = 0.17.3
+else
+WLROOTS_VERSION = 0.18.2
+endif
 WLROOTS_SITE = https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/$(WLROOTS_VERSION)/downloads
 WLROOTS_LICENSE = MIT
 WLROOTS_LICENSE_FILES = LICENSE
@@ -13,7 +17,6 @@ WLROOTS_INSTALL_STAGING = YES
 WLROOTS_DEPENDENCIES = \
 	host-pkgconf \
 	host-wayland \
-	hwdata \
 	libinput \
 	libxkbcommon \
 	libegl \
@@ -21,9 +24,9 @@ WLROOTS_DEPENDENCIES = \
 	pixman \
 	seatd \
 	udev \
-    hwdata \
-    libdisplay-info \
-    libliftoff \
+	hwdata \
+	libdisplay-info \
+	libliftoff \
 	wayland \
 	wayland-protocols
 

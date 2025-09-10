@@ -3,8 +3,8 @@
 # wolfssl
 #
 ################################################################################
-
-WOLFSSL_VERSION = 5.7.2
+# batocera - bump
+WOLFSSL_VERSION = 5.7.6
 WOLFSSL_SITE = $(call github,wolfSSL,wolfssl,v$(WOLFSSL_VERSION)-stable)
 WOLFSSL_INSTALL_STAGING = YES
 

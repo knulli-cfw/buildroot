@@ -59,7 +59,8 @@ HOST_CLANG_CONF_OPTS += -DLLVM_DIR=$(HOST_DIR)/lib/cmake/llvm \
 CLANG_CONF_OPTS += -DLLVM_DIR=$(STAGING_DIR)/usr/lib/cmake/llvm \
 	-DCMAKE_MODULE_PATH=$(HOST_DIR)/lib/cmake/llvm \
 	-DCLANG_TABLEGEN:FILEPATH=$(HOST_DIR)/bin/clang-tblgen \
-	-DLLVM_TABLEGEN_EXE:FILEPATH=$(HOST_DIR)/bin/llvm-tblgen
+	-DLLVM_TABLEGEN_EXE:FILEPATH=$(HOST_DIR)/bin/llvm-tblgen \
+	-DLLVM_ENABLE_LTO=ON
 
 # Clang can't be used as compiler on the target since there are no
 # development files (headers) and other build tools. So remove clang

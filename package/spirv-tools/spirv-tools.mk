@@ -3,9 +3,9 @@
 # spirv-tools
 #
 ################################################################################
-# batocera - update 1.3.297 has not been tagged yet, use the hash
+# batocera - bump
 # Keep in sync with spirv-headers version
-SPIRV_TOOLS_VERSION = 4310fd4edae21d711ab31f5183704ad320329419
+SPIRV_TOOLS_VERSION = vulkan-sdk-1.4.309.0
 #SPIRV_TOOLS_SITE = $(call github,KhronosGroup,SPIRV-Tools,vulkan-sdk-$(SPIRV_TOOLS_VERSION))
 SPIRV_TOOLS_SITE = $(call github,KhronosGroup,SPIRV-Tools,$(SPIRV_TOOLS_VERSION))
 SPIRV_TOOLS_LICENSE = Apache-2.0

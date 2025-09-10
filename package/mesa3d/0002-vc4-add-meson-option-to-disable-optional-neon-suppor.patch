@@ -14,15 +14,15 @@ Signed-off-by: Bernd Kuhls <bernd.kuhls@t-online.de>
 Signed-off-by: Peter Seiderer <ps.report@gmx.net>
 [fix syntax error after previous rebases]
 ---
- meson_options.txt                    | 8 ++++++++
+ meson.options                        | 8 ++++++++
  src/gallium/drivers/vc4/meson.build  | 4 ++--
  src/gallium/drivers/vc4/vc4_tiling.h | 4 ++--
  3 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/meson_options.txt b/meson_options.txt
+diff --git a/meson.options b/meson.options
 index 8e0bf2a..1cf0e07 100644
---- a/meson_options.txt
-+++ b/meson_options.txt
+--- a/meson.options
++++ b/meson.options
 @@ -124,6 +124,13 @@ option(
    description : 'enable gallium va frontend.',
  )

@@ -19,6 +19,11 @@ LIBDRM_CONF_OPTS = \
 	-Dcairo-tests=disabled \
 	-Dman-pages=disabled
 
+# batocera - add host package
+HOST_LIBDRM_CONF_OPTS = \
+	-Dcairo-tests=disabled \
+	-Dman-pages=disabled
+
 ifeq ($(BR2_PACKAGE_LIBATOMIC_OPS),y)
 LIBDRM_DEPENDENCIES += libatomic_ops
 ifeq ($(BR2_sparc_v8)$(BR2_sparc_leon3),y)
@@ -117,3 +122,5 @@ LIBDRM_CONF_OPTS += -Dtests=false
 endif
 
 $(eval $(meson-package))
+# batocera - add host package
+$(eval $(host-meson-package))

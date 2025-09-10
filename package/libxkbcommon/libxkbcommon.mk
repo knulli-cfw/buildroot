@@ -11,10 +11,10 @@ LIBXKBCOMMON_LICENSE = MIT/X11
 LIBXKBCOMMON_LICENSE_FILES = LICENSE
 LIBXKBCOMMON_CPE_ID_VENDOR = xkbcommon
 LIBXKBCOMMON_INSTALL_STAGING = YES
-LIBXKBCOMMON_DEPENDENCIES = host-bison host-flex
+LIBXKBCOMMON_DEPENDENCIES = host-bison host-flex libxml2 # batocera - add libxml2
 LIBXKBCOMMON_CONF_OPTS = \
 	-Denable-docs=false \
-	-Denable-xkbregistry=false
+	-Denable-xkbregistry=true # batocera `true` for WINE
 
 # batocera
 ifeq ($(BR2_PACKAGE_WAYLAND),y)
