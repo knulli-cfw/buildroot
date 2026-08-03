@@ -46,6 +46,7 @@ TI_K3_R5_LOADER_DEPENDENCIES = \
 	host-pkgconf \
 	$(BR2_MAKE_HOST_DEPENDENCY) \
 	host-arm-gnu-toolchain \
+	host-gnutls \
 	host-openssl \
 	host-python3 \
 	host-python-jsonschema \
@@ -76,6 +77,7 @@ TI_K3_R5_LOADER_MAKE_OPTS = \
 	HOSTLDFLAGS="$(HOST_LDFLAGS)" \
 	BINMAN_INDIRS=$(BINARIES_DIR)
 
+TI_K3_R5_LOADER_KCONFIG_FRAGMENT_FILES = $(call qstrip,$(BR2_TARGET_TI_K3_R5_LOADER_CONFIG_FRAGMENT_FILES))
 TI_K3_R5_LOADER_TIBOOT3_BIN = $(call qstrip,$(BR2_TARGET_TI_K3_R5_LOADER_TIBOOT3_BIN))
 
 define TI_K3_R5_LOADER_INSTALL_TIBOOT3_BIN

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SHADOW_VERSION = 4.16.0
+SHADOW_VERSION = 4.18.0
 SHADOW_SITE = https://github.com/shadow-maint/shadow/releases/download/$(SHADOW_VERSION)
 SHADOW_SOURCE = shadow-$(SHADOW_VERSION).tar.xz
 SHADOW_LICENSE = BSD-3-Clause
@@ -46,6 +46,7 @@ SHADOW_CONF_OPTS += --disable-account-tools-setuid
 endif
 
 ifeq ($(BR2_PACKAGE_SHADOW_SUBORDINATE_IDS),y)
+SHADOW_INSTALL_STAGING = YES
 SHADOW_CONF_OPTS += --enable-subordinate-ids
 define SHADOW_SUBORDINATE_IDS_PERMISSIONS
 	/usr/bin/newuidmap f 4755 0 0 - - - - -
@@ -138,5 +139,20 @@ define SHADOW_PERMISSIONS
 	$(SHADOW_ACCOUNT_TOOLS_SETUID_PERMISSIONS)
 	$(SHADOW_SUBORDINATE_IDS_PERMISSIONS)
 endef
+
+ifeq ($(BR2_TARGET_GENERIC_PASSWD_SHA256),y)
+SHADOW_ENCRYPT_METHOD = SHA256
+else ifeq ($(BR2_TARGET_GENERIC_PASSWD_SHA512),y)
+SHADOW_ENCRYPT_METHOD = SHA512
+endif
+
+ifneq ($(SHADOW_ENCRYPT_METHOD),)
+define SHADOW_SET_ENCRYPT_METHOD
+	$(SED) 's/^[#]\?ENCRYPT_METHOD .*/ENCRYPT_METHOD $(SHADOW_ENCRYPT_METHOD)/' \
+		$(TARGET_DIR)/etc/login.defs
+endef
+
+SHADOW_POST_INSTALL_TARGET_HOOKS += SHADOW_SET_ENCRYPT_METHOD
+endif
 
 $(eval $(autotools-package))

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PROFTPD_VERSION = 1.3.8b
+PROFTPD_VERSION = 1.3.9a
 PROFTPD_SITE = https://github.com/proftpd/proftpd/archive/v$(PROFTPD_VERSION)
 PROFTPD_LICENSE = GPL-2.0+
 PROFTPD_LICENSE_FILES = COPYING
@@ -47,6 +47,13 @@ PROFTPD_CONF_OPTS += --enable-cap
 PROFTPD_DEPENDENCIES += libcap
 else
 PROFTPD_CONF_OPTS += --disable-cap
+endif
+
+ifeq ($(BR2_PACKAGE_PROFTPD_MOD_LANG),y)
+PROFTPD_CONF_OPTS += --enable-nls
+ifneq ($(BR2_ENABLE_LOCALE),y)
+PROFTPD_DEPENDENCIES += libiconv
+endif
 endif
 
 ifeq ($(BR2_PACKAGE_PROFTPD_MOD_REWRITE),y)

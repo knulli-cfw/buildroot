@@ -7,48 +7,49 @@
 # Generate version string using:
 #   git describe --match 'glibc-*' --abbrev=40 origin/release/MAJOR.MINOR/master | cut -d '-' -f 2-
 # When updating the version, please also update localedef
-GLIBC_VERSION = 2.40-18-g5641780762723156b0d20a0b9f7df1d76831bab0
-# Upstream doesn't officially provide an https download link.
-# There is one (https://sourceware.org/git/glibc.git) but it's not reliable,
-# sometimes the connection times out. So use an unofficial github mirror.
-# When updating the version, check it on the official repository;
-# *NEVER* decide on a version string by looking at the mirror.
-# Then check that the mirror has been synced already (happens once a day.)
-GLIBC_SITE = $(call github,bminor,glibc,$(GLIBC_VERSION))
+GLIBC_VERSION = 2.43-27-g4070d808bea1c077eb7e7d52b52b91cae98205d5
+GLIBC_SITE = https://sourceware.org/git/glibc.git
+GLIBC_SITE_METHOD = git
 
 GLIBC_LICENSE = GPL-2.0+ (programs), LGPL-2.1+, BSD-3-Clause, MIT (library)
-GLIBC_LICENSE_FILES = COPYING COPYING.LIB LICENSES
+GLIBC_LICENSE_FILES = COPYINGv2 COPYING.LESSERv2 LICENSES
 GLIBC_CPE_ID_VENDOR = gnu
 
 # Extract the base version (e.g. 2.38) from GLIBC_VERSION in order to
 # allow proper matching with the CPE database.
 GLIBC_CPE_ID_VERSION = $(word 1, $(subst -,$(space),$(GLIBC_VERSION)))
 
-# Fixed by glibc-2.39-31-g31da30f23cddd36db29d5b6a1c7619361b271fb4
-GLIBC_IGNORE_CVES += CVE-2024-2961
+# Fixed by glibc-2.41-64-g1e16d0096d80a6e12d5bfa8e0aafdd13c47efd65
+GLIBC_IGNORE_CVES += CVE-2025-8058
 
-# Fixed by glibc-2.39-35-g1263d583d2e28afb8be53f8d6922f0842036f35d
-GLIBC_IGNORE_CVES += CVE-2024-33599
+# Fixed by glibc-2.42-49-gb0ec8fb689df862171f0f78994a3bdeb51313545
+GLIBC_IGNORE_CVES += CVE-2026-0861
 
-# Fixed by glibc-2.39-37-gc99f886de54446cd4447db6b44be93dabbdc2f8b
-GLIBC_IGNORE_CVES += CVE-2024-33600
+# Fixed by glibc-2.42-50-g453e6b8dbab935257eb0802b0c97bca6b67ba30e
+GLIBC_IGNORE_CVES += CVE-2026-0915
 
-# Fixed by glibc-2.39-38-ga9a8d3eebb145779a18d90e3966009a1daa63cd
-GLIBC_IGNORE_CVES += CVE-2024-33601 CVE-2024-33602
+# Fixed by glibc-2.42-51-gcbf39c26b25801e9bc88499b4fd361ac172d4125
+GLIBC_IGNORE_CVES += CVE-2025-15281
 
-# All these CVEs are considered as not being security issues by
+# Fixed by glibc-2.43-16-g5c6fca0c62ce5bd6e68e259f138097756cbafd4d
+GLIBC_IGNORE_CVES += CVE-2026-4437
+
+# Fixed by glibc-2.43-17-gdd9945c0ba40d2dbc9eb7c99291ba6b69bd66718
+GLIBC_IGNORE_CVES += CVE-2026-4438
+
+# Fixed by glibc-2.43-22-g8362e8ce10b24068bacc19552c128dd10e082fd9
+GLIBC_IGNORE_CVES += CVE-2026-4046
+
+# Fixed by glibc-2.43-26-g2890b35cd361df2517525bf2c5f8c63f6f0d4a20
+GLIBC_IGNORE_CVES += CVE-2026-5928
+
+# Fixed by glibc-2.43-27-g4070d808bea1c077eb7e7d52b52b91cae98205d5
+GLIBC_IGNORE_CVES += CVE-2026-5450
+
+# This CVE is considered as not being security issues by
 # upstream glibc:
 #  https://security-tracker.debian.org/tracker/CVE-2010-4756
-#  https://security-tracker.debian.org/tracker/CVE-2019-1010022
-#  https://security-tracker.debian.org/tracker/CVE-2019-1010023
-#  https://security-tracker.debian.org/tracker/CVE-2019-1010024
-#  https://security-tracker.debian.org/tracker/CVE-2019-1010025
-GLIBC_IGNORE_CVES += \
-	CVE-2010-4756 \
-	CVE-2019-1010022 \
-	CVE-2019-1010023 \
-	CVE-2019-1010024 \
-	CVE-2019-1010025
+GLIBC_IGNORE_CVES += CVE-2010-4756
 
 # glibc is part of the toolchain so disable the toolchain dependency
 GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
@@ -61,8 +62,6 @@ GLIBC_DEPENDENCIES = host-gcc-initial linux-headers host-bison host-gawk \
 GLIBC_SUBDIR = build
 
 GLIBC_INSTALL_STAGING = YES
-
-GLIBC_INSTALL_STAGING_OPTS = install_root=$(STAGING_DIR) install
 
 # Thumb build is broken, build in ARM mode
 ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
@@ -143,10 +142,6 @@ endif
 # Glibc nowadays can be build with optimization flags f.e. -Os
 
 GLIBC_CFLAGS = $(TARGET_OPTIMIZATION)
-# crash in qemu-system-nios2 with -Os
-ifeq ($(BR2_nios2),y)
-GLIBC_CFLAGS += -O2
-endif
 
 # glibc can't be built without optimization
 ifeq ($(BR2_OPTIMIZE_0),y)

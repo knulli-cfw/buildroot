@@ -1,5 +1,5 @@
 # md5, sha256 from https://pypi.org/pypi/aiomqtt/json
-md5  e23feb8ad69a1ae3a9701fb1f3c03a3c  aiomqtt-2.3.0.tar.gz
-sha256  312feebe20bc76dc7c20916663011f3bd37aa6f42f9f687a19a1c58308d80d47  aiomqtt-2.3.0.tar.gz
+md5  75cb0ed1ad029d19cb76478879aba12b  aiomqtt-2.5.1.tar.gz
+sha256  25a0a47d157e8f158d2da1110ea4786c0615518751e94f7b04976c977a8ff20d  aiomqtt-2.5.1.tar.gz
 # Locally computed sha256 checksums
 sha256  2cdee9e997c759749069649dfb9060fdb885da82bc50c0dcb4841b1dcab0b032  LICENSE

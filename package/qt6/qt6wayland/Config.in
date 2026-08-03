@@ -4,7 +4,7 @@ comment "qt6wayland needs an OpenGL-capable backend"
 config BR2_PACKAGE_QT6WAYLAND
 	bool "qt6wayland"
 	depends on BR2_PACKAGE_QT6_GL_SUPPORTS
-	select BR2_PACKAGE_WAYLAND
+	depends on BR2_PACKAGE_WAYLAND # batocera - change to depends
 	select BR2_PACKAGE_QT6BASE_GUI
 	# needed because we build host-qt6wayland
 	select BR2_PACKAGE_HOST_QT6BASE_GUI

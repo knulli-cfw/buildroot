@@ -31,11 +31,11 @@ endif
 
 define ACPID_SET_EVENTS
 	mkdir -p $(TARGET_DIR)/etc/acpi/events
-	printf 'event=button[ /]power\naction=%s\n' '$(ACPID_POWEROFF_CMD)' \
+	# batocera - we don't want that action
+	# printf 'event=button[ /]power\naction=%s\n' '$(ACPID_POWEROFF_CMD)' \
 		>$(TARGET_DIR)/etc/acpi/events/powerbtn
 endef
 
-# batocera : we won't that
-#ACPID_POST_INSTALL_TARGET_HOOKS += ACPID_SET_EVENTS
+ACPID_POST_INSTALL_TARGET_HOOKS += ACPID_SET_EVENTS
 
 $(eval $(autotools-package))

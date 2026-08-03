@@ -1,5 +1,5 @@
-# From https://lists.x.org/archives/xorg-announce/2024-February/003450.html
-sha256  0a288114e5f44e31987042c79aecff1ffad53a8154b8ec971c24a69a80f81f77  xkbcomp-1.4.7.tar.xz
-sha512  6f468dce9d2499ab1022f4288d46f66af149dac0a161fb5b9dc0c262bc70c2c3d254db2c6fb5df1e2793c822e2d55c6da5fd037ce523a555b7c3de23e35c49ef  xkbcomp-1.4.7.tar.xz
+# From https://lists.x.org/archives/xorg-announce/2025-December/003645.html
+sha256  2ac31f26600776db6d9cd79b3fcd272263faebac7eb85fb2f33c7141b8486060  xkbcomp-1.5.0.tar.xz
+sha512  d8ef4906261251e2600b3650660fbe88ed99a44694f1e59b433e0811f1ab5234c4f2f0b3647fa5372fb0f46b56eac60c0219a762bf1af0ab06226b63e4a6b081  xkbcomp-1.5.0.tar.xz
 # Locally computed
 sha256  6b833fdc05906ce57f016dc791db86830d49ee4da2861ce45806c50b3f4dda9e  COPYING

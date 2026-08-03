@@ -23,19 +23,12 @@ choice
 
 config BR2_arcle
 	bool "ARC (little endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  Synopsys' DesignWare ARC Processor Cores are a family of
 	  32-bit CPUs that can be used from deeply embedded to high
 	  performance host applications. Little endian.
-
-config BR2_arceb
-	bool "ARC (big endian)"
-	select BR2_USE_MMU
-	help
-	  Synopsys' DesignWare ARC Processor Cores are a family of
-	  32-bit CPUs that can be used from deeply embedded to high
-	  performance host applications. Big endian.
 
 config BR2_arm
 	bool "ARM (little endian)"
@@ -49,6 +42,7 @@ config BR2_arm
 
 config BR2_armeb
 	bool "ARM (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  ARM is a 32-bit reduced instruction set computer (RISC)
@@ -67,11 +61,21 @@ config BR2_aarch64
 
 config BR2_aarch64_be
 	bool "AArch64 (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_ARCH_IS_64
 	help
 	  Aarch64 is a 64-bit architecture developed by ARM Holdings.
 	  http://www.arm.com/products/processors/instruction-set-architectures/armv8-architecture.php
 	  http://en.wikipedia.org/wiki/ARM
+
+config BR2_hppa
+	bool "HPPA"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
+	select BR2_USE_MMU
+	help
+	  Precision Architecture (a.k.a. PA-RISC) is a 32-bit
+	  (big endian) architecture developed by Hewlett Packard.
+	  https://en.wikipedia.org/wiki/PA-RISC
 
 config BR2_i386
 	bool "i386"
@@ -80,8 +84,20 @@ config BR2_i386
 	  Intel i386 architecture compatible microprocessor
 	  http://en.wikipedia.org/wiki/I386
 
+config BR2_loongarch64
+	bool "LoongArch64"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
+	select BR2_USE_MMU
+	select BR2_ARCH_IS_64
+	select BR2_ARCH_NEEDS_GCC_AT_LEAST_12
+	help
+	  LoongArch64 is 64-bit architecture developed by Loongson.
+	  http://www.loongson.cn/
+	  https://en.wikipedia.org/wiki/Loongson
+
 config BR2_m68k
 	bool "m68k"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	# MMU support is set by the subarchitecture file, arch/Config.in.m68k
 	help
 	  Motorola 68000 family microprocessor
@@ -89,6 +105,7 @@ config BR2_m68k
 
 config BR2_microblazeel
 	bool "Microblaze AXI (little endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  Soft processor core designed for Xilinx FPGAs from Xilinx. AXI
@@ -98,6 +115,7 @@ config BR2_microblazeel
 
 config BR2_microblazebe
 	bool "Microblaze non-AXI (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  Soft processor core designed for Xilinx FPGAs from Xilinx. PLB
@@ -107,6 +125,7 @@ config BR2_microblazebe
 
 config BR2_mips
 	bool "MIPS (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  MIPS is a RISC microprocessor from MIPS Technologies. Big
@@ -116,6 +135,7 @@ config BR2_mips
 
 config BR2_mipsel
 	bool "MIPS (little endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  MIPS is a RISC microprocessor from MIPS Technologies. Little
@@ -125,6 +145,7 @@ config BR2_mipsel
 
 config BR2_mips64
 	bool "MIPS64 (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_ARCH_IS_64
 	select BR2_USE_MMU
 	help
@@ -143,16 +164,9 @@ config BR2_mips64el
 	  http://www.mips.com/
 	  http://en.wikipedia.org/wiki/MIPS_Technologies
 
-config BR2_nios2
-	bool "Nios II"
-	select BR2_USE_MMU
-	help
-	  Nios II is a soft core processor from Altera Corporation.
-	  http://www.altera.com/
-	  http://en.wikipedia.org/wiki/Nios_II
-
 config BR2_or1k
 	bool "OpenRISC"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  OpenRISC is a free and open processor for embedded system.
@@ -160,6 +174,7 @@ config BR2_or1k
 
 config BR2_powerpc
 	bool "PowerPC"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  PowerPC is a RISC architecture created by Apple-IBM-Motorola
@@ -169,6 +184,7 @@ config BR2_powerpc
 
 config BR2_powerpc64
 	bool "PowerPC64 (big endian)"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_ARCH_IS_64
 	select BR2_USE_MMU
 	help
@@ -199,6 +215,7 @@ config BR2_riscv
 
 config BR2_s390x
 	bool "s390x"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_ARCH_IS_64
 	select BR2_USE_MMU
 	help
@@ -208,6 +225,7 @@ config BR2_s390x
 
 config BR2_sh
 	bool "SuperH"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  SuperH (or SH) is a 32-bit reduced instruction set computer
@@ -218,6 +236,7 @@ config BR2_sh
 
 config BR2_sparc
 	bool "SPARC"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_USE_MMU
 	help
 	  SPARC (from Scalable Processor Architecture) is a RISC
@@ -228,6 +247,7 @@ config BR2_sparc
 
 config BR2_sparc64
 	bool "SPARC64"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	select BR2_ARCH_IS_64
 	select BR2_USE_MMU
 	help
@@ -248,6 +268,7 @@ config BR2_x86_64
 
 config BR2_xtensa
 	bool "Xtensa"
+	depends on !BR2_HIDE_SECONDARY_TARGET_OPTIONS
 	# MMU support is set by the subarchitecture file, arch/Config.in.xtensa
 	help
 	  Xtensa is a Tensilica processor IP architecture.
@@ -319,6 +340,10 @@ config BR2_ARCH_NEEDS_GCC_AT_LEAST_15
 	bool
 	select BR2_ARCH_NEEDS_GCC_AT_LEAST_14
 
+config BR2_ARCH_NEEDS_GCC_AT_LEAST_16
+	bool
+	select BR2_ARCH_NEEDS_GCC_AT_LEAST_15
+
 # The following string values are defined by the individual
 # Config.in.$ARCH files
 config BR2_ARCH
@@ -357,6 +382,12 @@ config BR2_GCC_TARGET_FPU
 config BR2_GCC_TARGET_FLOAT_ABI
 	string
 
+# The value of this option will be passed as --with-simd=<value> when
+# building gcc (internal backend) or -simd=<value> in the toolchain
+# wrapper (external toolchain)
+config BR2_GCC_TARGET_SIMD
+	string
+
 # The value of this option will be passed as --with-mode=<value> when
 # building gcc (internal backend) or -m<value> in the toolchain
 # wrapper (external toolchain)
@@ -373,12 +404,20 @@ config BR2_BINFMT_SUPPORTS_SHARED
 config BR2_READELF_ARCH_NAME
 	string
 
-if BR2_arcle || BR2_arceb
+if BR2_arcle
 source "arch/Config.in.arc"
 endif
 
 if BR2_arm || BR2_armeb || BR2_aarch64 || BR2_aarch64_be
 source "arch/Config.in.arm"
+endif
+
+if BR2_hppa
+source "arch/Config.in.hppa"
+endif
+
+if BR2_loongarch64
+source "arch/Config.in.loongarch"
 endif
 
 if BR2_m68k
@@ -391,10 +430,6 @@ endif
 
 if BR2_mips || BR2_mips64 || BR2_mipsel || BR2_mips64el
 source "arch/Config.in.mips"
-endif
-
-if BR2_nios2
-source "arch/Config.in.nios2"
 endif
 
 if BR2_or1k

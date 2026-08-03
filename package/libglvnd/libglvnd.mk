@@ -4,13 +4,8 @@
 #
 ################################################################################
 
-# batocera (update)
-LIBGLVND_VERSION = v1.7.0
-LIBGLVND_SOURCE= libglvnd-$(LIBGLVND_VERSION).gz
-LIBGLVND_SITE = https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/$(LIBGLVND_VERSION)
-
-# batocera - host package
-LIBGLVND_DEPENDENCIES = host-libglvnd
+LIBGLVND_VERSION = 1.7.0
+LIBGLVND_SITE = https://gitlab.freedesktop.org/glvnd/libglvnd/uploads/c24806c283070dc70700234ca8ffacf8
 
 LIBGLVND_LICENSE = \
 	libglvnd license, \
@@ -28,8 +23,6 @@ LIBGLVND_INSTALL_STAGING = YES
 ifeq ($(BR2_PACKAGE_XLIB_LIBX11),y)
 LIBGLVND_DEPENDENCIES += xlib_libX11
 LIBGLVND_CONF_OPTS += -Dx11=enabled
-# batocera - host config
-HOST_LIBGLVND_CONF_OPTS += -Dx11=enabled
 else
 LIBGLVND_CONF_OPTS += -Dx11=disabled
 endif
@@ -37,10 +30,6 @@ endif
 ifeq ($(BR2_PACKAGE_LIBGLVND_DISPATCH_GL),y)
 LIBGLVND_DEPENDENCIES += xlib_libXext xorgproto
 LIBGLVND_CONF_OPTS += -Dglx=enabled
-# batocera - host config
-HOST_LIBGLVND_CONF_OPTS += -Dglx=enabled
-# batocera - host package
-HOST_LIBGLVND_DEPENDENCIES += host-xlib_libXext
 LIBGLVND_PROVIDES += libgl
 else
 LIBGLVND_CONF_OPTS += -Dglx=disabled
@@ -48,8 +37,6 @@ endif
 
 ifeq ($(BR2_PACKAGE_LIBGLVND_DISPATCH_EGL),y)
 LIBGLVND_CONF_OPTS += -Degl=true
-# batocera - host config
-HOST_LIBGLVND_CONF_OPTS += -Degl=true
 LIBGLVND_PROVIDES += libegl
 else
 LIBGLVND_CONF_OPTS += -Degl=false
@@ -57,13 +44,9 @@ endif
 
 ifeq ($(BR2_PACKAGE_LIBGLVND_DISPATCH_GLES),y)
 LIBGLVND_CONF_OPTS += -Dgles1=true -Dgles2=true
-# batocera - host config
-HOST_LIBGLVND_CONF_OPTS += -Dgles1=true -Dgles2=true
 LIBGLVND_PROVIDES += libgles
 else
 LIBGLVND_CONF_OPTS += -Dgles1=false -Dgles2=false
 endif
 
 $(eval $(meson-package))
-# batocera - host package
-$(eval $(host-meson-package))

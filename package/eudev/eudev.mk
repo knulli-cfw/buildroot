@@ -12,9 +12,7 @@ EUDEV_INSTALL_STAGING = YES
 
 EUDEV_CONF_OPTS = \
 	--disable-manpages \
-	--sbindir=/sbin \
 	--libexecdir=/lib \
-	--disable-introspection \
 	--enable-kmod \
 	--enable-blkid
 
@@ -22,8 +20,14 @@ EUDEV_CONF_OPTS = \
 EUDEV_DEPENDENCIES = host-gperf host-pkgconf util-linux-libs
 EUDEV_PROVIDES = udev
 
-ifeq ($(BR2_ROOTFS_MERGED_USR),)
-EUDEV_CONF_OPTS += --with-rootlibdir=/lib --enable-split-usr
+ifeq ($(BR2_ROOTFS_MERGED_USR),y)
+ifeq ($(BR2_ROOTFS_MERGED_BIN),y)
+EUDEV_CONF_OPTS += --sbindir=/usr/bin
+else
+EUDEV_CONF_OPTS += --sbindir=/usr/sbin
+endif
+else
+EUDEV_CONF_OPTS += --sbindir=/sbin --with-rootlibdir=/lib --enable-split-usr
 endif
 
 ifeq ($(BR2_PACKAGE_EUDEV_MODULE_LOADING),y)
@@ -53,10 +57,10 @@ EUDEV_CONF_OPTS += --disable-selinux
 endif
 
 define EUDEV_INSTALL_INIT_SYSV
-	$(INSTALL) -D -m 0755 package/eudev/S10udev $(TARGET_DIR)/etc/init.d/S10udev
+	$(INSTALL) -D -m 0755 package/eudev/S10udevd $(TARGET_DIR)/etc/init.d/S10udevd
 endef
 
-# Avoid installing S10udev with openrc, as the service is started by a unit
+# Avoid installing S10udevd with openrc, as the service is started by a unit
 # from the udev-gentoo-scripts package.
 define EUDEV_INSTALL_INIT_OPENRC
 	@:
@@ -71,7 +75,6 @@ HOST_EUDEV_CONF_OPTS = \
 	--with-rootlibdir=/lib \
 	--sysconfdir=/etc \
 	--disable-blkid \
-	--disable-introspection \
 	--disable-kmod \
 	--disable-manpages \
 	--disable-rule-generator \
@@ -84,7 +87,7 @@ define HOST_EUDEV_INSTALL_CMDS
 endef
 
 define HOST_EUDEV_BUILD_HWDB
-	$(HOST_DIR)/bin/udevadm hwdb --update --root $(TARGET_DIR)
+	$(HOST_DIR)/bin/udevadm hwdb --update --usr --root $(TARGET_DIR)
 endef
 HOST_EUDEV_TARGET_FINALIZE_HOOKS += HOST_EUDEV_BUILD_HWDB
 

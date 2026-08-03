@@ -4,9 +4,9 @@
 #
 ################################################################################
 # batocera (update)
-LIBXKBCOMMON_VERSION = 1.5.0
-LIBXKBCOMMON_SITE = https://xkbcommon.org/download
-LIBXKBCOMMON_SOURCE = libxkbcommon-$(LIBXKBCOMMON_VERSION).tar.xz
+LIBXKBCOMMON_VERSION = 1.13.1
+LIBXKBCOMMON_SITE = https://github.com/xkbcommon/libxkbcommon/archive/refs/tags
+LIBXKBCOMMON_SOURCE = xkbcommon-$(LIBXKBCOMMON_VERSION).tar.gz
 LIBXKBCOMMON_LICENSE = MIT/X11
 LIBXKBCOMMON_LICENSE_FILES = LICENSE
 LIBXKBCOMMON_CPE_ID_VENDOR = xkbcommon
@@ -15,14 +15,6 @@ LIBXKBCOMMON_DEPENDENCIES = host-bison host-flex libxml2 # batocera - add libxml
 LIBXKBCOMMON_CONF_OPTS = \
 	-Denable-docs=false \
 	-Denable-xkbregistry=true # batocera `true` for WINE
-
-# batocera
-ifeq ($(BR2_PACKAGE_WAYLAND),y)
-LIBXKBCOMMON_CONF_OPTS += -Denable-wayland=true
-LIBXKBCOMMON_DEPENDENCIES += wayland wayland-protocols
-else
-LIBXKBCOMMON_CONF_OPTS += -Denable-wayland=false
-endif
 
 ifeq ($(BR2_PACKAGE_XORG7),y)
 LIBXKBCOMMON_CONF_OPTS += -Denable-x11=true

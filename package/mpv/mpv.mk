@@ -5,8 +5,8 @@
 ################################################################################
 # batocera - bump for ffmpeg update. remove 0001 patch
 # move from waf to meson package
-MPV_VERSION = 0.40.0
-MPV_SITE = $(call github,mpv-player,mpv,v$(MPV_VERSION))
+MPV_VERSION = v0.41.0
+MPV_SITE = $(call github,mpv-player,mpv,$(MPV_VERSION))
 MPV_DEPENDENCIES = \
 	host-pkgconf ffmpeg libass libdisplay-info libplacebo zlib \
 	$(if $(BR2_PACKAGE_LIBICONV),libiconv)
@@ -159,12 +159,13 @@ MPV_CONF_OPTS += -Dpulse=disabled
 endif
 
 # SDL support
+# batocera - expand
 # Sdl2 requires 64-bit sync intrinsics
-ifeq ($(BR2_TOOLCHAIN_HAS_SYNC_8)$(BR2_PACKAGE_SDL2),yy)
-MPV_CONF_OPTS += -Dsdl2=enabled
-MPV_DEPENDENCIES += sdl2
+ifeq ($(BR2_TOOLCHAIN_HAS_SYNC_8)$(BR2_PACKAGE_SDL2)$(BR2_PACKAGE_SDL2_MIXER),yyy)
+MPV_CONF_OPTS += -Dsdl2-gamepad=enabled -Dsdl2-audio=enabled -Dsdl2-video=enabled
+MPV_DEPENDENCIES += sdl2 sdl2_mixer
 else
-MPV_CONF_OPTS += -Dsdl2=disabled
+MPV_CONF_OPTS += -Dsdl2-gamepad=disabled -Dsdl2-audio=disabled -Dsdl2-video=disabled
 endif
 
 # Raspberry Pi support - batocera: no rpi meson option
@@ -225,15 +226,15 @@ endif
 
 # batocera - add cuda
 ifeq ($(BR2_PACKAGE_NVIDIA_OPEN_DRIVER_CUDA),y)
-MPV_CONF_OPTS += -Dcuda-hwaccel=enabled
+MPV_CONF_OPTS += -Dcuda-hwaccel=enabled -Dcuda-interop=enabled
 else
-MPV_CONF_OPTS += -Dcuda-hwaccel=disabled
+MPV_CONF_OPTS += -Dcuda-hwaccel=disabled -Dcuda-interop=disabled
 endif
 
 # batocera - add vulkan
-ifeq ($(BR2_PACKAGE_VULKAN_HEADERS)$(BR2_PACKAGE_VULKAN_LOADER),yy)
+ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER)$(BR2_PACKAGE_VULKAN_LOADER),yy)
 MPV_CONF_OPTS += -Dvulkan=enabled
-MPV_DEPENDENCIES += vulkan-headers vulkan-loader
+MPV_DEPENDENCIES += mesa3d vulkan-loader
 else
 MPV_CONF_OPTS += -Dvulkan=disabled
 endif
@@ -264,9 +265,14 @@ endif
 
 # batocera - extend vdpau support
 ifeq ($(BR2_PACKAGE_LIBVDPAU)$(BR2_PACKAGE_XORG7),yy)
-MPV_CONF_OPTS += -Dvdpau-gl-x11=enabled
+MPV_CONF_OPTS += -Dvdpau=enabled -Dvdpau-gl-x11=enabled
 else
-MPV_CONF_OPTS += -Dvdpau-gl-x11=disabled
+MPV_CONF_OPTS += -Dvdpau=disabled -Dvdpau-gl-x11=disabled
 endif
 
 $(eval $(meson-package))
+
+# batcoera - add by board type (patched) currently
+ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_RK3568)$(BR2_PACKAGE_BATOCERA_TARGET_H616)$(BR2_PACKAGE_BATOCERA_TARGET_RK3576)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE),y)
+MPV_CONF_OPTS += -Dv4l2request=enabled
+endif

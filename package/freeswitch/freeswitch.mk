@@ -19,6 +19,9 @@ FREESWITCH_LICENSE_FILES = \
 	libs/apr/LICENSE \
 	libs/srtp/LICENSE
 
+# 0006-Move-project-to-PCRE2.patch
+FREESWITCH_AUTORECONF = YES
+
 FREESWITCH_CPE_ID_VENDOR = freeswitch
 
 # required dependencies
@@ -27,7 +30,7 @@ FREESWITCH_DEPENDENCIES = \
 	jpeg \
 	libcurl \
 	openssl \
-	pcre \
+	pcre2 \
 	spandsp \
 	sofia-sip \
 	speex \
@@ -207,11 +210,6 @@ FREESWITCH_DEPENDENCIES += libks
 FREESWITCH_ENABLED_MODULES += endpoints/mod_verto
 endif
 
-ifeq ($(BR2_PACKAGE_LIBLDNS),y)
-FREESWITCH_DEPENDENCIES += libldns
-FREESWITCH_ENABLED_MODULES += applications/mod_enum
-endif
-
 ifeq ($(BR2_PACKAGE_LIBMEMCACHED),y)
 FREESWITCH_DEPENDENCIES += libmemcached
 FREESWITCH_ENABLED_MODULES += applications/mod_memcache
@@ -278,8 +276,8 @@ FREESWITCH_DEPENDENCIES += libsoundtouch
 FREESWITCH_ENABLED_MODULES += applications/mod_soundtouch
 endif
 
-ifeq ($(BR2_PACKAGE_OPENCV3),y)
-FREESWITCH_DEPENDENCIES += opencv3
+ifeq ($(BR2_PACKAGE_FREESWITCH_OPENCV4),y)
+FREESWITCH_DEPENDENCIES += opencv4
 FREESWITCH_ENABLED_MODULES += applications/mod_cv
 endif
 

@@ -4,9 +4,15 @@
 #
 ################################################################################
 
-WINE_VERSION = 9.19
+# In Buildroot, Wine should be updated only on "stable" versions. This
+# usually corresponds to version "X.0" (for initial stable releases)
+# or "X.0.y" (for maintenance releases). Please avoid updating to a
+# development version, unless it is absolutely needed (for example:
+# incompatibility with another library and no maintenance stable
+# version is available).
+WINE_VERSION = 11.0
 WINE_SOURCE = wine-$(WINE_VERSION).tar.xz
-WINE_SITE = https://dl.winehq.org/wine/source/9.x
+WINE_SITE = https://dl.winehq.org/wine/source/11.0
 WINE_LICENSE = LGPL-2.1+
 WINE_LICENSE_FILES = COPYING.LIB LICENSE
 WINE_CPE_ID_VENDOR = winehq
@@ -19,6 +25,7 @@ WINE_CONF_OPTS = \
 	--with-wine-tools=../host-wine-$(WINE_VERSION) \
 	--disable-tests \
 	--disable-win64 \
+	--enable-tools \
 	--without-capi \
 	--without-coreaudio \
 	--without-gettext \
@@ -135,13 +142,6 @@ WINE_CONF_OPTS += --with-v4l2
 WINE_DEPENDENCIES += libv4l
 else
 WINE_CONF_OPTS += --without-v4l2
-endif
-
-ifeq ($(BR2_PACKAGE_MESA3D_OSMESA_GALLIUM),y)
-WINE_CONF_OPTS += --with-osmesa
-WINE_DEPENDENCIES += mesa3d
-else
-WINE_CONF_OPTS += --without-osmesa
 endif
 
 ifeq ($(BR2_PACKAGE_PCSC_LITE),y)

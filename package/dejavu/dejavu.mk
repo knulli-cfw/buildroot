@@ -9,6 +9,9 @@ DEJAVU_SITE = https://sourceforge.net/projects/dejavu/files/dejavu/$(DEJAVU_VERS
 DEJAVU_SOURCE = dejavu-fonts-ttf-$(DEJAVU_VERSION).tar.bz2
 DEJAVU_LICENSE_FILES = LICENSE
 
+# batocera - install staging
+DEJAVU_INSTALL_STAGING = YES
+
 DEJAVU_FONTS_INSTALL =
 DEJAVU_FONTCONFIG_CONF_INSTALL =
 
@@ -49,6 +52,15 @@ define DEJAVU_FONTCONFIG_CONF_INSTALL_CMDS
 	done
 endef
 endif
+
+# batocera - staging
+define DEJAVU_INSTALL_STAGING_CMDS
+	mkdir -p $(STAGING_DIR)/usr/share/fonts/dejavu/
+	for i in $(DEJAVU_FONTS_INSTALL) ; do \
+		$(INSTALL) -m 0644 $(@D)/ttf/$$i \
+			$(STAGING_DIR)/usr/share/fonts/dejavu/ || exit 1 ; \
+	done
+endef
 
 define DEJAVU_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/usr/share/fonts/dejavu/

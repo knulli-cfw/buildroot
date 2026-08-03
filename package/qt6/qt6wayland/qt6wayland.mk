@@ -55,8 +55,7 @@ HOST_QT6WAYLAND_CONF_OPTS = \
 	-DFEATURE_wayland_client=OFF \
 	-DFEATURE_wayland_server=OFF
 
-# batocera - add host-wayland
-HOST_QT6WAYLAND_DEPENDENCIES = host-qt6base host-wayland
+HOST_QT6WAYLAND_DEPENDENCIES = host-qt6base
 
 $(eval $(cmake-package))
 $(eval $(host-cmake-package))

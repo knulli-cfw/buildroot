@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-POCO_VERSION = 1.13.2
+POCO_VERSION = 1.14.2
 POCO_SITE = $(call github,pocoproject,poco,poco-$(POCO_VERSION)-release)
 POCO_LICENSE = BSL-1.0
 POCO_LICENSE_FILES = LICENSE
@@ -13,6 +13,7 @@ POCO_INSTALL_STAGING = YES
 
 POCO_DEPENDENCIES = \
 	pcre2 \
+	utf8proc \
 	zlib \
 	$(if $(BR2_PACKAGE_POCO_CRYPTO),openssl) \
 	$(if $(BR2_PACKAGE_POCO_DATA_MYSQL),mariadb) \
@@ -48,7 +49,7 @@ POCO_CONF_OPTS += --no-fpenvironment --no-wstring
 endif
 
 # architectures missing some FE_* in their fenv.h
-ifeq ($(BR2_sh4a)$(BR2_nios2),y)
+ifeq ($(BR2_sh4a),y)
 POCO_CONF_OPTS += --no-fpenvironment
 endif
 
@@ -76,9 +77,8 @@ define POCO_CONFIGURE_CMDS
 		--no-samples)
 endef
 
-# Use $(MAKE1) to avoid failures on heavilly parallel machines (e.g. -j25)
 define POCO_BUILD_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE1) POCO_TARGET_OSARCH=$(ARCH) CROSS_COMPILE=$(TARGET_CROSS) \
+	$(TARGET_MAKE_ENV) $(MAKE) POCO_TARGET_OSARCH=$(ARCH) CROSS_COMPILE=$(TARGET_CROSS) \
 		POCO_MYSQL_INCLUDE=$(STAGING_DIR)/usr/include/mysql \
 		POCO_MYSQL_LIB=$(STAGING_DIR)/usr/lib/mysql \
 		POCO_PGSQL_INCLUDE=$(STAGING_DIR)/usr/include/postgresql \

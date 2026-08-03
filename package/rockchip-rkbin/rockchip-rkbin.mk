@@ -3,8 +3,8 @@
 # rockchip-rkbin
 #
 ################################################################################
-# batocera - Commits on Jan 24, 2025
-ROCKCHIP_RKBIN_VERSION = f43a462e7a1429a9d407ae52b4745033034a6cf9
+# batocera - Commits on Jun 13, 2025
+ROCKCHIP_RKBIN_VERSION = 74213af1e952c4683d2e35952507133b61394862
 ROCKCHIP_RKBIN_SITE = https://github.com/rockchip-linux/rkbin.git
 ROCKCHIP_RKBIN_SITE_METHOD = git
 ROCKCHIP_RKBIN_LICENSE = PROPRIETARY

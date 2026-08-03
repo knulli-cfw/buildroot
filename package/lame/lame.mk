@@ -21,8 +21,6 @@ endif
 
 ifeq ($(BR2_PACKAGE_NCURSES),y)
 LAME_DEPENDENCIES += ncurses
-# batocera
-LAME_CONF_ENV = LIBS="-ltinfo"
 endif
 
 ifeq ($(BR2_ENDIAN),"BIG")

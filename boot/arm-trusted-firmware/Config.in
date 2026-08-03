@@ -1,4 +1,4 @@
-config BR2_TARGET_ARM_TRUSTED_FIRMWARE
+menuconfig BR2_TARGET_ARM_TRUSTED_FIRMWARE
 	bool "ARM Trusted Firmware (ATF)"
 	depends on (BR2_ARM_CPU_ARMV8A || BR2_ARM_CPU_ARMV7A)
 	help
@@ -14,7 +14,12 @@ choice
 	  Select the specific ATF version you want to use
 
 config BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_VERSION
-	bool "v2.11"
+	bool "v2.12"
+
+config BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_LTS_2_12_VERSION
+	bool "latest lts-v2.12.x"
+	help
+	  Select the latest LTS v2.12.x version available
 
 config BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_LTS_2_10_VERSION
 	bool "latest lts-v2.10.x"
@@ -52,7 +57,8 @@ config BR2_TARGET_ARM_TRUSTED_FIRMWARE_CUSTOM_VERSION_VALUE
 
 config BR2_TARGET_ARM_TRUSTED_FIRMWARE_VERSION
 	string
-	default "v2.11"		if BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_VERSION
+	default "v2.12"		if BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_VERSION
+	default "lts-v2.12.1"	if BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_LTS_2_12_VERSION
 	default "lts-v2.10.5"	if BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_LTS_2_10_VERSION
 	default "lts-v2.8.20"	if BR2_TARGET_ARM_TRUSTED_FIRMWARE_LATEST_LTS_2_8_VERSION
 	default "custom"	if BR2_TARGET_ARM_TRUSTED_FIRMWARE_CUSTOM_TARBALL
@@ -73,6 +79,14 @@ config BR2_TARGET_ARM_TRUSTED_FIRMWARE_CUSTOM_REPO_VERSION
 	  E.G. a sha id, a tag, ..
 
 endif
+
+config BR2_TARGET_ARM_TRUSTED_FIRMWARE_LICENSE_FILES
+	string "ATF license files" if BR2_TARGET_ARM_TRUSTED_FIRMWARE_CUSTOM_GIT || \
+		BR2_TARGET_ARM_TRUSTED_FIRMWARE_CUSTOM_TARBALL
+	default "docs/license.rst"
+	help
+	  A space-separated list of license files related to the ATF
+	  package.
 
 config BR2_TARGET_ARM_TRUSTED_FIRMWARE_PLATFORM
 	string "ATF platform"
@@ -182,6 +196,19 @@ config BR2_TARGET_ARM_TRUSTED_FIRMWARE_EDK2_AS_BL33
 	  for the 'qemu_sbsa' platform. In this case, due to the EDK2
 	  build system, the dependency between ATF and EDK is reversed.
 
+config BR2_TARGET_ARM_TRUSTED_FIRMWARE_LINUX_AS_BL33
+	bool "Linux kernel"
+	depends on BR2_LINUX_KERNEL
+	depends on (BR2_arm || BR2_armeb)
+	depends on (BR2_LINUX_KERNEL_ZIMAGE || BR2_LINUX_KERNEL_APPENDED_ZIMAGE)
+	help
+	  This option allows to embed the Linux kernel as the BL33
+	  part of the ARM Trusted Firmware.
+
+	  Do not choose this option if you intend to use U-Boot or
+	  another second-stage bootloader. With this option, TF-A
+	  starts Linux directly.
+
 endchoice
 
 if BR2_TARGET_ARM_TRUSTED_FIRMWARE_BAREBOX_AS_BL33
@@ -249,7 +276,7 @@ config BR2_TARGET_ARM_TRUSTED_FIRMWARE_NEEDS_DTC
 config BR2_TARGET_ARM_TRUSTED_FIRMWARE_NEEDS_ARM32_TOOLCHAIN
 	bool "Needs arm-none-eabi toolchain"
 	depends on BR2_aarch64
-	depends on BR2_HOSTARCH = "x86_64"
+	depends on BR2_PACKAGE_HOST_ARM_GNU_TOOLCHAIN_SUPPORTS
 	help
 	  Select this option if your ATF board configuration requires
 	  an ARM32 bare metal toolchain to be available.

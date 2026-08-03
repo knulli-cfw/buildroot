@@ -7,7 +7,7 @@
 ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
 SWAY_VERSION = 1.9
 else
-SWAY_VERSION = 1.10.1
+SWAY_VERSION = 1.11
 endif
 SWAY_SITE = https://github.com/swaywm/sway/releases/download/$(SWAY_VERSION)
 SWAY_LICENSE = MIT

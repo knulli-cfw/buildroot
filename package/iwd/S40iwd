@@ -1,16 +1,19 @@
 #!/bin/sh
 
-DAEMON="/usr/libexec/iwd"
-PIDFILE="/var/run/iwd.pid"
+DAEMON="iwd"
+PIDFILE="/var/run/$DAEMON.pid"
 
 IWD_ARGS=""
 
-[ -r "/etc/default/iwd" ] && . "/etc/default/iwd"
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
 
 start() {
-	printf "Starting iwd:"
+	printf 'Starting %s: ' "$DAEMON"
 	mkdir -p /tmp/iwd/hotspot
-	start-stop-daemon -b -m -S -q -p "$PIDFILE" -x "$DAEMON" \
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon --start --background --make-pidfile \
+		--pidfile "$PIDFILE" --exec "/usr/libexec/$DAEMON" \
 		-- $IWD_ARGS
 	status=$?
 	if [ "$status" -eq 0 ]; then
@@ -22,8 +25,8 @@ start() {
 }
 
 stop() {
-	printf "Stopping iwd:"
-	start-stop-daemon -K -q -p "$PIDFILE"
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon --stop --quiet --pidfile "$PIDFILE"
 	status=$?
 	if [ "$status" -eq 0 ]; then
 		echo "OK"

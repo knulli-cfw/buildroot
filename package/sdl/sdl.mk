@@ -13,7 +13,7 @@ SDL_CPE_ID_VENDOR = libsdl
 SDL_CPE_ID_PRODUCT = simple_directmedia_layer
 SDL_INSTALL_STAGING = YES
 
-# 0003-SDL_x11yuv.c-fix-possible-use-after-free.patch
+# 0002-SDL_x11yuv.c-fix-possible-use-after-free.patch
 SDL_IGNORE_CVES += CVE-2022-34568
 
 # we're patching configure.in, but package cannot autoreconf with our version of
@@ -28,20 +28,14 @@ HOST_SDL_PRE_CONFIGURE_HOOKS += SDL_RUN_AUTOGEN
 SDL_DEPENDENCIES += host-automake host-autoconf host-libtool
 HOST_SDL_DEPENDENCIES += host-automake host-autoconf host-libtool
 
-SDL_CONF_OPTS += --enable-video-qtopia=no
+SDL_CONF_OPTS += \
+	--enable-video-qtopia=no \
+	--enable-video-directfb=no
 
 ifeq ($(BR2_PACKAGE_SDL_FBCON),y)
 SDL_CONF_OPTS += --enable-video-fbcon=yes
 else
 SDL_CONF_OPTS += --enable-video-fbcon=no
-endif
-
-ifeq ($(BR2_PACKAGE_SDL_DIRECTFB),y)
-SDL_DEPENDENCIES += directfb
-SDL_CONF_OPTS += --enable-video-directfb=yes
-SDL_CONF_ENV = ac_cv_path_DIRECTFBCONFIG=$(STAGING_DIR)/usr/bin/directfb-config
-else
-SDL_CONF_OPTS += --enable-video-directfb=no
 endif
 
 ifeq ($(BR2_PACKAGE_SDL_X11),y)

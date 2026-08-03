@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera (update)
-VULKAN_HEADERS_VERSION = v1.4.309
+VULKAN_HEADERS_VERSION = v1.4.350
 VULKAN_HEADERS_SITE = $(call github,KhronosGroup,Vulkan-Headers,$(VULKAN_HEADERS_VERSION))
 VULKAN_HEADERS_LICENSE = Apache-2.0
 VULKAN_HEADERS_LICENSE_FILES = LICENSE.txt
@@ -16,3 +16,5 @@ VULKAN_HEADERS_DEPENDENCIES += mesa3d
 endif
 
 $(eval $(cmake-package))
+# batocera: enable host build
+$(eval $(host-cmake-package))

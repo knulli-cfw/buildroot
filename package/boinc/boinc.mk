@@ -4,13 +4,14 @@
 #
 ################################################################################
 
-BOINC_VERSION_MAJOR = 7.20
-BOINC_VERSION = $(BOINC_VERSION_MAJOR).2
+BOINC_VERSION_MAJOR = 8.2
+BOINC_VERSION = $(BOINC_VERSION_MAJOR).11
 BOINC_SITE = \
 	$(call github,BOINC,boinc,client_release/$(BOINC_VERSION_MAJOR)/$(BOINC_VERSION))
 BOINC_LICENSE = LGPL-3.0+
 BOINC_LICENSE_FILES = COPYING COPYING.LESSER
-BOINC_CPE_ID_VENDOR = rom_walton
+BOINC_CPE_ID_VENDOR = universityofcalifornia
+BOINC_CPE_ID_PRODUCT = boinc_client
 BOINC_SELINUX_MODULES = boinc
 BOINC_DEPENDENCIES = host-pkgconf libcurl openssl
 BOINC_AUTORECONF = YES

@@ -3,12 +3,12 @@
 # wolfssl
 #
 ################################################################################
-# batocera - bump
-WOLFSSL_VERSION = 5.7.6
+
+WOLFSSL_VERSION = 5.9.1
 WOLFSSL_SITE = $(call github,wolfSSL,wolfssl,v$(WOLFSSL_VERSION)-stable)
 WOLFSSL_INSTALL_STAGING = YES
 
-WOLFSSL_LICENSE = GPL-2.0+
+WOLFSSL_LICENSE = GPL-3.0+
 WOLFSSL_LICENSE_FILES = COPYING LICENSING
 WOLFSSL_CPE_ID_VENDOR = wolfssl
 WOLFSSL_CONFIG_SCRIPTS = wolfssl-config

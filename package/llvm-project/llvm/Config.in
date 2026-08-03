@@ -24,6 +24,7 @@ config BR2_PACKAGE_LLVM
 	depends on !BR2_STATIC_LIBS
 	depends on BR2_USE_WCHAR # std::wstring
 	depends on BR2_HOST_GCC_AT_LEAST_7 # host-llvm
+	select BR2_HOST_CMAKE_AT_LEAST_3_20 # cmake required version at least 3.20
 	help
 	  The LLVM Project is a collection of modular and reusable
 	  compiler and toolchain technologies.
@@ -37,6 +38,12 @@ config BR2_PACKAGE_LLVM_AMDGPU
 	help
 	  Build AMDGPU target. Select this option if you are going
 	  to install mesa3d with llvm and use Gallium Radeon driver.
+
+# batcoera - add intel jit events option
+config BR2_PACKAGE_LLVM_INTEL_JITEVENTS
+	bool "Enable LLVM Intel jit events"
+	help
+	  Build LLVM_USE_INTEL_JITEVENTS accordingly.
 
 config BR2_PACKAGE_LLVM_RTTI
 	bool "enable rtti"

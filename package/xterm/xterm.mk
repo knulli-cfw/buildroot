@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-XTERM_VERSION = 389
+XTERM_VERSION = 401
 XTERM_SOURCE = xterm-$(XTERM_VERSION).tgz
 XTERM_SITE = http://invisible-mirror.net/archives/xterm
 XTERM_DEPENDENCIES = ncurses xlib_libXaw host-pkgconf
@@ -16,8 +16,7 @@ XTERM_CONF_OPTS = --enable-256-color \
 	--x-libraries=$(STAGING_DIR)/usr/lib
 
 # Avoid freetype2 path poisoning by imake
-# batocera - add -ltinfo
-XTERM_CONF_ENV = ac_cv_path_IMAKE="" LIBS="-ltinfo"
+XTERM_CONF_ENV = ac_cv_path_IMAKE=""
 
 ifeq ($(BR2_PACKAGE_XLIB_LIBXFT),y)
 XTERM_DEPENDENCIES += xlib_libXft

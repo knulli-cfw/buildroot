@@ -120,6 +120,7 @@ define _json-info-pkg
 		"virtual": false$(comma)
 		$(call _json-info-pkg-details,$(1)) \
 	)
+	"package_dir": $(call mk-json-str,$(patsubst $(CURDIR)/%,%,$($(1)_PKGDIR))),
 	"stamp_dir": $(call mk-json-str,$(patsubst $(CONFIG_DIR)/%,%,$($(1)_DIR))),
 	"source_dir": $(call mk-json-str,$(patsubst $(CONFIG_DIR)/%,%,$($(1)_DIR))),
 	"build_dir": $(call mk-json-str,$(patsubst $(CONFIG_DIR)/%,%,$($(1)_BUILDDIR))),
@@ -156,6 +157,24 @@ define _json-info-pkg
 	)
 endef
 
+# The RAWNAME variable is the lowercased package name, which allows to
+# find the package directory (typically package/<pkgname>) and the
+# prefix of the patches
+pkg-patch-hash-dirs = \
+	$($(1)_PKGDIR) $(addsuffix /$($(1)_RAWNAME),$(call qstrip,$(BR2_GLOBAL_PATCH_DIR)))
+
+pkg-patches-dirs = \
+	$(foreach dir, $(call pkg-patch-hash-dirs,$(1)),\
+		$(wildcard $(if $($(1)_VERSION),\
+			$(or $(wildcard $(dir)/$($(1)_VERSION)),$(dir)),\
+			$(dir))))
+
+pkg-patches-url = $(foreach patch,$($(1)_PATCH),\
+	$(if $(findstring ://,$(patch)),$(patch),\
+		$($(1)_SITE_METHOD)+$($(1)_SITE)/$(patch)))
+
+pkg-patches-list = $(foreach patchdir,$(call pkg-patches-dirs,$(1)),$(wildcard $(addsuffix /*.patch,$(patchdir)))) $(call pkg-patches-url,$(1))
+
 define _json-info-pkg-details
 	"version": $(call mk-json-str,$($(1)_DL_VERSION)),
 	"licenses": $(call mk-json-str,$($(1)_LICENSE)),
@@ -178,6 +197,20 @@ define _json-info-pkg-details
 		},
 	)
 	],
+	"patches": [
+		$(foreach patch, \
+			$(call pkg-patches-list,$(1)), \
+			$(call mk-json-str,$(patsubst $(CONFIG_DIR)/%,%,$(patch)))$(comma) \
+		)
+	],
+	$(if $($(1)_PROVIDES), \
+		"provides": [ \
+			$(foreach provide, \
+				$($(1)_PROVIDES), \
+				$(call mk-json-str,$(provide))$(comma) \
+			) \
+		]$(comma) \
+	)
 endef
 
 define _json-info-fs
@@ -221,14 +254,16 @@ ifeq ($(BR2_PER_PACKAGE_DIRECTORIES),y)
 # $2: 'host' or 'target'
 # $3: destination directory
 # $4: literal "copy" or "hardlink" to copy or hardlink files from src to dest
+# batocera - we want to update new files if updated in another `per-package` folder
+# therefore we -au and remove tac
 define per-package-rsync
 	mkdir -p $(3)
 	$(if $(filter hardlink,$(4)), \
 		$(foreach pkg,$(1),\
-			rsync -a --hard-links --link-dest=$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ \
+			rsync -au --hard-links --link-dest=$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ \
 				$(PER_PACKAGE_DIR)/$(pkg)/$(2)/ $(3)$(sep)), \
-		printf "%s/$(2)/\n" $(1) | tac \
-			| rsync -a --hard-links --files-from=- --no-R -r $(PER_PACKAGE_DIR) $(3))
+		printf "%s/$(2)/\n" $(1) \
+			| rsync -au --hard-links --files-from=- --no-R -r $(PER_PACKAGE_DIR) $(3))
 endef
 
 # prepares the per-package HOST_DIR and TARGET_DIR of the current

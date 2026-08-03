@@ -4,16 +4,20 @@
 #
 ################################################################################
 
-TVHEADEND_VERSION = 26ec161fb3c903f8b0d0be8b54d1b67c596fb829
+TVHEADEND_VERSION = 37453bc3fe5f9e10f3428ebb1abdc613f8b07186
 TVHEADEND_SITE = $(call github,tvheadend,tvheadend,$(TVHEADEND_VERSION))
 TVHEADEND_LICENSE = GPL-3.0+
 TVHEADEND_LICENSE_FILES = LICENSE.md
 TVHEADEND_DEPENDENCIES = \
+	dtv-scan-tables \
 	host-gettext \
 	host-pkgconf \
 	host-pngquant \
 	host-python3 \
 	openssl
+TVHEADEND_CONF_OPTS = \
+	--disable-omx \
+	--disable-pcre
 
 ifeq ($(BR2_PACKAGE_AVAHI),y)
 TVHEADEND_DEPENDENCIES += avahi
@@ -41,12 +45,6 @@ TVHEADEND_DEPENDENCIES += opus
 else
 TVHEADEND_CONF_OPTS += --disable-libopus
 endif
-ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
-TVHEADEND_CONF_OPTS += --enable-omx
-TVHEADEND_DEPENDENCIES += rpi-userland
-else
-TVHEADEND_CONF_OPTS += --disable-omx
-endif
 ifeq ($(BR2_PACKAGE_LIBVPX)$(BR2_INSTALL_LIBSTDCPP),yy)
 TVHEADEND_CONF_OPTS += --enable-libvpx
 TVHEADEND_DEPENDENCIES += libvpx
@@ -63,7 +61,6 @@ else
 TVHEADEND_CONF_OPTS += \
 	--disable-libav \
 	--disable-libopus \
-	--disable-omx \
 	--disable-vaapi \
 	--disable-libvpx \
 	--disable-libx264 \
@@ -130,19 +127,14 @@ endif
 
 ifeq ($(BR2_PACKAGE_PCRE2),y)
 TVHEADEND_DEPENDENCIES += pcre2
-TVHEADEND_CONF_OPTS += --disable-pcre --enable-pcre2
-else ifeq ($(BR2_PACKAGE_PCRE),y)
-TVHEADEND_DEPENDENCIES += pcre
-TVHEADEND_CONF_OPTS += --enable-pcre --disable-pcre2
+TVHEADEND_CONF_OPTS += --enable-pcre2
 else
-TVHEADEND_CONF_OPTS += --disable-pcre --disable-pcre2
+TVHEADEND_CONF_OPTS += --disable-pcre2
 endif
 
 ifeq ($(BR2_TOOLCHAIN_SUPPORTS_PIE),)
 TVHEADEND_CONF_OPTS += --disable-pie
 endif
-
-TVHEADEND_DEPENDENCIES += dtv-scan-tables
 
 # The tvheadend build system expects the transponder data to be present inside
 # its source tree. To prevent a download initiated by the build system just

@@ -4,30 +4,27 @@
 #
 ################################################################################
 
-MPD_VERSION_MAJOR = 0.23
-MPD_VERSION = $(MPD_VERSION_MAJOR).15
+MPD_VERSION_MAJOR = 0.24
+MPD_VERSION = $(MPD_VERSION_MAJOR).9
 MPD_SOURCE = mpd-$(MPD_VERSION).tar.xz
 MPD_SITE = https://www.musicpd.org/download/mpd/$(MPD_VERSION_MAJOR)
-MPD_DEPENDENCIES = host-pkgconf boost fmt
+MPD_DEPENDENCIES = host-pkgconf fmt
 MPD_LICENSE = GPL-2.0+
 MPD_LICENSE_FILES = COPYING
-# these refer to the FreeBSD PPP daemon
-MPD_IGNORE_CVES = CVE-2020-7465 CVE-2020-7466
+
+MPD_CPE_ID_VENDOR = musicpd
+MPD_CPE_ID_PRODUCT = music_player_demon
+
 MPD_SELINUX_MODULES = mpd
 MPD_CONF_OPTS = \
 	-Daudiofile=disabled \
 	-Ddocumentation=disabled \
+	-Dhtml_manual=false \
+	-Dmanpages=false \
+	-Dmpcdec=disabled \
 	-Dopenmpt=disabled \
 	-Dpipewire=disabled \
 	-Dsnapcast=false
-
-# Zeroconf support depends on libdns_sd from avahi.
-ifeq ($(BR2_PACKAGE_MPD_AVAHI_SUPPORT),y)
-MPD_DEPENDENCIES += avahi
-MPD_CONF_OPTS += -Dzeroconf=avahi
-else
-MPD_CONF_OPTS += -Dzeroconf=disabled
-endif
 
 ifeq ($(BR2_PACKAGE_EXPAT),y)
 MPD_DEPENDENCIES += expat
@@ -44,11 +41,19 @@ else
 MPD_CONF_OPTS += -Dicu=disabled
 endif
 
-ifeq ($(BR2_PACKAGE_YAJL),y)
-MPD_DEPENDENCIES += yajl
-MPD_CONF_OPTS += -Dyajl=enabled
+# uClibc w/o locales
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+MPD_DEPENDENCIES += libiconv
+MPD_CONF_OPTS += -Diconv=enabled
 else
-MPD_CONF_OPTS += -Dyajl=disabled
+MPD_CONF_OPTS += -Diconv=disabled
+endif
+
+ifeq ($(BR2_PACKAGE_JSON_FOR_MODERN_CPP),y)
+MPD_DEPENDENCIES += json-for-modern-cpp
+MPD_CONF_OPTS += -Dnlohmann_json=enabled
+else
+MPD_CONF_OPTS += -Dnlohmann_json=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_MPD_ALSA),y)
@@ -56,6 +61,14 @@ MPD_DEPENDENCIES += alsa-lib
 MPD_CONF_OPTS += -Dalsa=enabled
 else
 MPD_CONF_OPTS += -Dalsa=disabled
+endif
+
+# Zeroconf support depends on libdns_sd from avahi.
+ifeq ($(BR2_PACKAGE_MPD_AVAHI_SUPPORT),y)
+MPD_DEPENDENCIES += avahi
+MPD_CONF_OPTS += -Dzeroconf=avahi
+else
+MPD_CONF_OPTS += -Dzeroconf=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_MPD_AO),y)
@@ -224,13 +237,6 @@ else
 MPD_CONF_OPTS += -Dmpg123=disabled
 endif
 
-ifeq ($(BR2_PACKAGE_MPD_MUSEPACK),y)
-MPD_DEPENDENCIES += musepack
-MPD_CONF_OPTS += -Dmpcdec=enabled
-else
-MPD_CONF_OPTS += -Dmpcdec=disabled
-endif
-
 ifeq ($(BR2_PACKAGE_MPD_NEIGHBOR_DISCOVERY_SUPPORT),y)
 MPD_CONF_OPTS += -Dneighbor=true
 else
@@ -283,12 +289,6 @@ MPD_DEPENDENCIES += libsidplay2
 MPD_CONF_OPTS += -Dsidplay=enabled
 else
 MPD_CONF_OPTS += -Dsidplay=disabled
-endif
-
-ifeq ($(BR2_PACKAGE_MPD_SOUNDCLOUD),y)
-MPD_CONF_OPTS += -Dsoundcloud=enabled
-else
-MPD_CONF_OPTS += -Dsoundcloud=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_MPD_SQLITE),y)

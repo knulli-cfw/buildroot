@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera - bump
-GST1_PLUGINS_BASE_VERSION = 1.26.4
+GST1_PLUGINS_BASE_VERSION = 1.28.5
 GST1_PLUGINS_BASE_SOURCE = gst-plugins-base-$(GST1_PLUGINS_BASE_VERSION).tar.xz
 GST1_PLUGINS_BASE_SITE = https://gstreamer.freedesktop.org/src/gst-plugins-base
 GST1_PLUGINS_BASE_INSTALL_STAGING = YES
@@ -96,10 +96,6 @@ GST1_PLUGINS_BASE_WINSYS_LIST += wayland
 GST1_PLUGINS_BASE_DEPENDENCIES += wayland wayland-protocols
 endif
 
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BASE_LIB_OPENGL_DISPMANX),y)
-GST1_PLUGINS_BASE_WINSYS_LIST += dispmanx
-GST1_PLUGINS_BASE_DEPENDENCIES += rpi-userland
-endif
 GST1_PLUGINS_BASE_CONF_OPTS += -Dgl_winsys='$(subst $(space),$(comma),$(GST1_PLUGINS_BASE_WINSYS_LIST))'
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BASE_PLUGIN_ADDER),y)

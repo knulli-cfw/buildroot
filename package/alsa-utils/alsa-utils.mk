@@ -3,14 +3,12 @@
 # alsa-utils
 #
 ################################################################################
-# batocera - bump
-ALSA_UTILS_VERSION = 1.2.14
+
+ALSA_UTILS_VERSION = 1.2.15.2
 ALSA_UTILS_SOURCE = alsa-utils-$(ALSA_UTILS_VERSION).tar.bz2
 ALSA_UTILS_SITE = https://www.alsa-project.org/files/pub/utils
 ALSA_UTILS_LICENSE = GPL-2.0
 ALSA_UTILS_LICENSE_FILES = COPYING
-# 0011-configure.ac-fix-UMP-support-detection.patch
-ALSA_UTILS_AUTORECONF = YES
 ALSA_UTILS_INSTALL_STAGING = YES
 ALSA_UTILS_DEPENDENCIES = host-pkgconf alsa-lib \
 	$(if $(BR2_PACKAGE_NCURSES),ncurses) \
@@ -89,9 +87,9 @@ ifeq ($(BR2_PACKAGE_ALSA_UTILS_ALSACTL)$(BR2_INIT_SYSTEMD),yy)
 ALSA_UTILS_DEPENDENCIES += systemd
 ALSA_UTILS_CONF_OPTS += --with-systemdsystemunitdir=/usr/lib/systemd/system
 define ALSA_UTILS_INSTALL_INIT_SYSTEMD
-	$(INSTALL) -D -m 0644 $(@D)/alsactl/alsa-restore.service \
+	$(INSTALL) -D -m 0644 $(@D)/alsactl/conf/alsa-restore.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/alsa-restore.service
-	$(INSTALL) -D -m 0644 $(@D)/alsactl/alsa-state.service \
+	$(INSTALL) -D -m 0644 $(@D)/alsactl/conf/alsa-state.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/alsa-state.service
 	$(INSTALL) -d -m 0755 $(TARGET_DIR)/usr/lib/systemd/system/alsa-restore.service.d
 	printf '[Install]\nWantedBy=multi-user.target\n' \

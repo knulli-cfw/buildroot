@@ -3,10 +3,10 @@
 # freetype
 #
 ################################################################################
-# batocera - bump
-FREETYPE_VERSION = 2.13.3
+
+FREETYPE_VERSION = 2.14.3
 FREETYPE_SOURCE = freetype-$(FREETYPE_VERSION).tar.xz
-FREETYPE_SITE = http://download.savannah.gnu.org/releases/freetype
+FREETYPE_SITE = https://download.savannah.gnu.org/releases/freetype
 FREETYPE_INSTALL_STAGING = YES
 FREETYPE_MAKE_OPTS = CCexe="$(HOSTCC)"
 FREETYPE_LICENSE = FTL or GPL-2.0+

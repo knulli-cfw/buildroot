@@ -10,6 +10,9 @@ OPENBOX_SITE = http://openbox.org/dist/openbox
 OPENBOX_LICENSE = GPL-2.0+
 OPENBOX_LICENSE_FILES = COPYING
 
+# batocera - fix the parallel install race condition
+OPENBOX_MAKE = $(MAKE1)
+
 OPENBOX_CONF_OPTS = \
 	--x-includes=$(STAGING_DIR)/usr/include/X11 \
 	--x-libraries=$(STAGING_DIR)/usr/lib

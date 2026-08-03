@@ -3,12 +3,8 @@
 # wlroots
 #
 ################################################################################
-# batocera (update) - remove 0001 patch (RPi4 needs legacy version)
-ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
-WLROOTS_VERSION = 0.17.3
-else
-WLROOTS_VERSION = 0.18.2
-endif
+
+WLROOTS_VERSION = 0.20.2
 WLROOTS_SITE = https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/$(WLROOTS_VERSION)/downloads
 WLROOTS_LICENSE = MIT
 WLROOTS_LICENSE_FILES = LICENSE
@@ -17,28 +13,25 @@ WLROOTS_INSTALL_STAGING = YES
 WLROOTS_DEPENDENCIES = \
 	host-pkgconf \
 	host-wayland \
+	hwdata \
+	libdisplay-info \
 	libinput \
 	libxkbcommon \
 	libegl \
 	libgles \
+	libgbm \
 	pixman \
 	seatd \
 	udev \
-	hwdata \
-	libdisplay-info \
-	libliftoff \
 	wayland \
-	wayland-protocols
+	wayland-protocols \
+	host-glslang \
+	lcms2 # batocera, add host-glslang & lcms2
 
-WLROOTS_CONF_OPTS = -Dexamples=false -Dxcb-errors=disabled
+WLROOTS_CONF_OPTS = -Dexamples=false -Dxcb-errors=disabled -Dlibliftoff=disabled
 
 WLROOTS_RENDERERS = gles2
 WLROOTS_BACKENDS = libinput drm
-
-# batocera
-ifeq ($(BR2_PACKAGE_HAS_LIBGBM),y)
-WLROOTS_CONF_OPTS += -Dallocators=gbm
-endif
 
 ifeq ($(BR2_PACKAGE_WLROOTS_X11),y)
 WLROOTS_BACKENDS += x11
@@ -52,12 +45,7 @@ else
 WLROOTS_CONF_OPTS += -Dxwayland=disabled
 endif
 
-# batocera - add vulkan build dependency
-ifeq ($(BR2_PACKAGE_VULKAN_HEADERS)$(BR2_PACKAGE_VULKAN_LOADER),yy)
-    WLROOTS_DEPENDENCIES +=  vulkan-headers vulkan-loader host-glslang
-endif
-
-ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER),y)
+ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER)$(BR2_PACKAGE_VULKAN_LOADER),yy)
 WLROOTS_RENDERERS += vulkan
 WLROOTS_DEPENDENCIES += mesa3d vulkan-loader
 endif

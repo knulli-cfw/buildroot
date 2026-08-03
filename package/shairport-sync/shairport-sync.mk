@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SHAIRPORT_SYNC_VERSION = 3.3.9
+SHAIRPORT_SYNC_VERSION = 4.3.7
 SHAIRPORT_SYNC_SITE = $(call github,mikebrady,shairport-sync,$(SHAIRPORT_SYNC_VERSION))
 
 SHAIRPORT_SYNC_LICENSE = MIT, BSD-3-Clause
@@ -44,9 +44,6 @@ else
 SHAIRPORT_SYNC_DEPENDENCIES += mbedtls
 SHAIRPORT_SYNC_CONF_OPTS += --with-ssl=mbedtls
 SHAIRPORT_SYNC_CONF_LIBS += -lmbedx509 -lmbedcrypto
-ifeq ($(BR2_PACKAGE_MBEDTLS_COMPRESSION),y)
-SHAIRPORT_SYNC_CONF_LIBS += -lz
-endif
 endif
 
 ifeq ($(BR2_PACKAGE_SHAIRPORT_SYNC_CONVOLUTION),y)
@@ -54,6 +51,14 @@ SHAIRPORT_SYNC_DEPENDENCIES += libsndfile
 SHAIRPORT_SYNC_CONF_OPTS += --with-convolution
 else
 SHAIRPORT_SYNC_CONF_OPTS += --without-convolution
+endif
+
+ifeq ($(BR2_PACKAGE_SHAIRPORT_SYNC_AIRPLAY2),y)
+# host-vim needed for xxd
+SHAIRPORT_SYNC_DEPENDENCIES += libplist libsodium libgcrypt ffmpeg util-linux host-vim
+SHAIRPORT_SYNC_CONF_OPTS += --with-airplay-2
+else
+SHAIRPORT_SYNC_CONF_OPTS += --without-airplay-2
 endif
 
 ifeq ($(BR2_PACKAGE_SHAIRPORT_SYNC_DBUS),y)

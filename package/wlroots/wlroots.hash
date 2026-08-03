@@ -1,8 +1,7 @@
-# Generated locally, after checking https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/0.18.2/downloads/wlroots-0.18.2.tar.gz.sig
-sha256  cf776c169169f279808d9eabc6583f484338dcd454c966a285ff178c88c105d4  wlroots-0.18.2.tar.gz
+# Locally calculated after checking pgp signature
+# https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/0.19.3/downloads/wlroots-0.20.2.tar.gz.sig
+# with key 34FF9526CFEF0E97A340E2E40FDE7BE0E88F5E48 "emersion <contact@emersion.fr>"
+sha256  80c567d2ed4efb2cfa6b077f22c7a710d9c78ba4e185a75e8694001114af0733  wlroots-0.20.2.tar.gz
 
 # Hashes for license files:
-sha256  ffd3737a478b83a8b51b42757d3bf909ef36694508355879722e11fc1fa6736b  LICENSE
-
-# batocera - for rpi4
-sha256  04d31521bd2b737541b9680098e55ebaaf956e68d692f80479f4ee1236606d98  wlroots-0.17.3.tar.gz
+sha256  35d427c043dcafe8893b9e7247348f599847c81d9a067703587c80707f3d58df  LICENSE

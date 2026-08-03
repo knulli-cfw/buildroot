@@ -3,7 +3,7 @@
 # libxcb
 #
 ################################################################################
-# batocera - update
+
 LIBXCB_VERSION = 1.17.0
 LIBXCB_SOURCE = libxcb-$(LIBXCB_VERSION).tar.xz
 LIBXCB_SITE = https://xorg.freedesktop.org/archive/individual/lib

@@ -4,7 +4,7 @@
 #
 ################################################################################
 # batocera - bump
-GST1_PLUGINS_BAD_VERSION = 1.26.4
+GST1_PLUGINS_BAD_VERSION = 1.28.5
 GST1_PLUGINS_BAD_SOURCE = gst-plugins-bad-$(GST1_PLUGINS_BAD_VERSION).tar.xz
 GST1_PLUGINS_BAD_SITE = https://gstreamer.freedesktop.org/src/gst-plugins-bad
 GST1_PLUGINS_BAD_INSTALL_STAGING = YES
@@ -513,13 +513,33 @@ else
 GST1_PLUGINS_BAD_CONF_OPTS += -Dvmnc=disabled
 endif
 
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_Y4M),y)
-GST1_PLUGINS_BAD_CONF_OPTS += -Dy4m=enabled
-else
-GST1_PLUGINS_BAD_CONF_OPTS += -Dy4m=disabled
-endif
+# batocera - remove option
+#ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_Y4M),y)
+#GST1_PLUGINS_BAD_CONF_OPTS += -Dy4m=enabled
+#else
+#GST1_PLUGINS_BAD_CONF_OPTS += -Dy4m=disabled
+#endif
 
 # Plugins with dependencies
+
+# batocera - add vulkan support
+ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_VULKAN),y)
+GST1_PLUGINS_BAD_CONF_OPTS += -Dvulkan=enabled -Dvulkan-video=enabled
+GST1_PLUGINS_BAD_DEPENDENCIES += vulkan-headers vulkan-loader
+ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_WAYLAND)$(BR2_PACKAGE_XORG7),yy)
+GST1_PLUGINS_BAD_CONF_OPTS += -Dvulkan-windowing=wayland,x11
+else ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_WAYLAND),y)
+GST1_PLUGINS_BAD_CONF_OPTS += -Dvulkan-windowing=wayland
+else ifeq ($(BR2_PACKAGE_XORG7),y)
+GST1_PLUGINS_BAD_CONF_OPTS += -Dvulkan-windowing=x11
+else
+GST1_PLUGINS_BAD_CONF_OPTS += -Dvulkan-windowing=auto
+endif
+else
+GST1_PLUGINS_BAD_CONF_OPTS += \
+	-Dvulkan=disabled \
+	-Dvulkan-video=disabled
+endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_AES),y)
 GST1_PLUGINS_BAD_CONF_OPTS += -Daes=enabled
@@ -560,13 +580,6 @@ ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_DECKLINK),y)
 GST1_PLUGINS_BAD_CONF_OPTS += -Ddecklink=enabled
 else
 GST1_PLUGINS_BAD_CONF_OPTS += -Ddecklink=disabled
-endif
-
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_DIRECTFB),y)
-GST1_PLUGINS_BAD_CONF_OPTS += -Ddirectfb=enabled
-GST1_PLUGINS_BAD_DEPENDENCIES += directfb
-else
-GST1_PLUGINS_BAD_CONF_OPTS += -Ddirectfb=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_DVB),y)
@@ -656,13 +669,6 @@ GST1_PLUGINS_BAD_DEPENDENCIES += libmpeg2 mjpegtools
 GST1_PLUGINS_BAD_HAS_GPL_LICENSE = y
 else
 GST1_PLUGINS_BAD_CONF_OPTS += -Dmpeg2enc=disabled
-endif
-
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_MUSEPACK),y)
-GST1_PLUGINS_BAD_CONF_OPTS += -Dmusepack=enabled
-GST1_PLUGINS_BAD_DEPENDENCIES += musepack
-else
-GST1_PLUGINS_BAD_CONF_OPTS += -Dmusepack=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_NEON),y)
@@ -763,10 +769,13 @@ ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_VA),y)
 GST1_PLUGINS_BAD_CONF_OPTS += -Dva=enabled
 GST1_PLUGINS_BAD_DEPENDENCIES += libva
 ifeq ($(BR2_PACKAGE_LIBDRM),y)
+GST1_PLUGINS_BAD_CONF_OPTS += -Ddrm=enabled
 GST1_PLUGINS_BAD_DEPENDENCIES += libdrm
 endif
 else
-GST1_PLUGINS_BAD_CONF_OPTS += -Dva=disabled
+GST1_PLUGINS_BAD_CONF_OPTS += \
+	-Ddrm=disabled \
+	-Dva=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_VOAACENC),y)

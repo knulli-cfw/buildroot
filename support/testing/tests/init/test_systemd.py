@@ -31,6 +31,25 @@ class InitSystemSystemdBase(InitSystemBase):
             self.start_emulator(fs)
         self.check_init("/lib/systemd/systemd")
 
+        # Test there is no tainted flag.
+        output, ret = self.emulator.run("systemctl --no-pager status")
+        self.assertEqual(ret, 0, f"'systemctl status' failed with exit code {ret}, with:\n{output}")
+        try:
+            # 'support-ended' tainted flag is only set based on the
+            # SUPPORT_END variable in /etc/os-release; as we don't set
+            # it in Buildroot, we can't get that flag in the runtime
+            # tests, even on our maintenance branches, so we don't need
+            # to filter it out.
+            tainted_flags = [
+                "".join(line.split(":")[1:]).strip()
+                for line in output
+                if line.strip().startswith("Tainted: ")
+            ][0]
+            raise RuntimeError(f"Tainted flags: {tainted_flags}")
+        except IndexError:
+            # No tainted flag \o/
+            pass
+
         # Test all units are OK
         output, _ = self.emulator.run("systemctl --no-pager --failed --no-legend")
         self.assertEqual(len(output), 0)
@@ -191,6 +210,7 @@ class TestInitSystemSystemdRwFull(InitSystemSystemdBase):
         BR2_PACKAGE_SYSTEMD_SYSUSERS=y
         BR2_PACKAGE_SYSTEMD_VCONSOLE=y
         BR2_TARGET_ROOTFS_EXT2=y
+        BR2_TARGET_ROOTFS_EXT2_SIZE="120M"
         """
 
     def test_run(self):
@@ -286,11 +306,11 @@ class InitSystemSystemdBaseOverlayfs():
         BR2_ROOTFS_OVERLAY="{}"
         BR2_LINUX_KERNEL=y
         BR2_LINUX_KERNEL_CUSTOM_VERSION=y
-        BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="5.10.202"
+        BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.18.21"
         BR2_LINUX_KERNEL_DEFCONFIG="vexpress"
         BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="{}"
         BR2_LINUX_KERNEL_DTS_SUPPORT=y
-        BR2_LINUX_KERNEL_INTREE_DTS_NAME="vexpress-v2p-ca9"
+        BR2_LINUX_KERNEL_INTREE_DTS_NAME="arm/vexpress-v2p-ca9"
         """.format(infra.filepath("tests/init/systemd-factory"),
                    infra.filepath("conf/overlayfs-kernel-fragment.config"))
 

@@ -89,6 +89,7 @@ HOST_QT6BASE_CONF_OPTS = \
 	-DFEATURE_dbus=OFF \
 	-DFEATURE_icu=OFF \
 	-DFEATURE_glib=OFF \
+	-DFEATURE_sql=OFF \
 	-DFEATURE_system_doubleconversion=ON \
 	-DFEATURE_system_libb2=ON \
 	-DFEATURE_system_pcre2=ON \
@@ -139,15 +140,6 @@ else
 HOST_QT6BASE_CONF_OPTS += -DFEATURE_network=OFF
 endif
 
-# We need host qt6base with Sql support for host-qt6tools to generate the
-# qhelpgenerator host tool. qt6tools will fail to build if qhelpgenerator is not
-# available.
-ifeq ($(BR2_PACKAGE_HOST_QT6BASE_SQL),y)
-HOST_QT6BASE_CONF_OPTS += -DFEATURE_sql=ON
-else
-HOST_QT6BASE_CONF_OPTS += -DFEATURE_sql=OFF
-endif
-
 # We need host-qt6base with Testlib support when building host-qt6declarative
 # with QuickTest support. QuickTest support is further required for building the
 # qmltestrunner host tool. qt6declarative will fail to build if qmltestrunner is
@@ -191,9 +183,9 @@ QT6BASE_DEPENDENCIES += freetype
 
 ifeq ($(BR2_PACKAGE_QT6BASE_VULKAN),y)
 QT6BASE_DEPENDENCIES   += vulkan-headers vulkan-loader
-QT6BASE_CONFIGURE_OPTS += -DFEATURE_vulkan=ON
+QT6BASE_CONF_OPTS += -DFEATURE_vulkan=ON
 else
-QT6BASE_CONFIGURE_OPTS += -DFEATURE_vulkan=OFF
+QT6BASE_CONF_OPTS += -DFEATURE_vulkan=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_QT6BASE_LINUXFB),y)
@@ -212,12 +204,12 @@ QT6BASE_CONF_OPTS += \
 QT6BASE_DEPENDENCIES += \
 	libxcb \
 	libxkbcommon \
+	xcb-util-cursor \
 	xcb-util-wm \
 	xcb-util-image \
 	xcb-util-keysyms \
 	xcb-util-renderutil \
-	xlib_libX11 \
-	xcb-util-cursor # batocera
+	xlib_libX11
 else
 QT6BASE_CONF_OPTS += -DFEATURE_xcb=OFF
 endif
@@ -439,6 +431,14 @@ define QT6BASE_RM_USR_MKSPECS
 	$(Q)rm -rf $(TARGET_DIR)/usr/mkspecs
 endef
 QT6BASE_TARGET_FINALIZE_HOOKS += QT6BASE_RM_USR_MKSPECS
+
+# batocera - needed for qtwaylandscanner
+ifeq ($(BR2_PACKAGE_WAYLAND),y)
+HOST_QT6BASE_CONF_OPTS += -DFEATURE_wayland=ON
+HOST_QT6BASE_DEPENDENCIES += host-wayland
+else
+HOST_QT6BASE_CONF_OPTS += -DFEATURE_wayland=OFF
+endif
 
 $(eval $(cmake-package))
 $(eval $(host-cmake-package))

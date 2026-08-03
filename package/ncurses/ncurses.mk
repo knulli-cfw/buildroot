@@ -5,8 +5,8 @@
 ################################################################################
 
 # When there is no snapshost yet for a new version, set it to the empty string
-NCURSES_VERSION_MAJOR = 6.4
-NCURSES_SNAPSHOT_DATE = 20230603
+NCURSES_VERSION_MAJOR = 6.6
+NCURSES_SNAPSHOT_DATE = 20251231
 NCURSES_VERSION = $(NCURSES_VERSION_MAJOR)$(if $(NCURSES_SNAPSHOT_DATE),-$(NCURSES_SNAPSHOT_DATE))
 NCURSES_VERSION_GIT = $(subst .,_,$(subst -,_,$(NCURSES_VERSION)))
 NCURSES_SITE = $(call github,ThomasDickey,ncurses-snapshots,v$(NCURSES_VERSION_GIT))
@@ -18,7 +18,6 @@ NCURSES_CPE_ID_VENDOR = gnu
 NCURSES_CPE_ID_VERSION = $(NCURSES_VERSION_MAJOR)$(if $(NCURSES_SNAPSHOT_DATE),.$(NCURSES_SNAPSHOT_DATE))
 NCURSES_CONFIG_SCRIPTS = ncurses$(NCURSES_LIB_SUFFIX)6-config
 
-# batocera - add the termlib option for RPCS3
 NCURSES_CONF_OPTS = \
 	--without-cxx \
 	--without-cxx-binding \
@@ -35,8 +34,7 @@ NCURSES_CONF_OPTS = \
 	--disable-stripping \
 	--with-pkg-config-libdir="/usr/lib/pkgconfig" \
 	$(if $(BR2_PACKAGE_NCURSES_TARGET_PROGS),,--without-progs) \
-	--without-manpages \
-	--with-termlib=tinfo
+	--without-manpages
 
 ifeq ($(BR2_STATIC_LIBS),y)
 NCURSES_CONF_OPTS += --without-shared --with-normal
@@ -120,7 +118,8 @@ NCURSES_CONF_OPTS += --enable-ext-colors
 
 NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_LIBS
 NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_PC
-
+else
+NCURSES_CONF_OPTS += --disable-widec
 endif # BR2_PACKAGE_NCURSES_WCHAR
 
 ifneq ($(BR2_ENABLE_DEBUG),y)

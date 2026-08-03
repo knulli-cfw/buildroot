@@ -1,6 +1,7 @@
-# From https://docs.mesa3d.org/relnotes/25.1.9.html
-sha256  412df33a1bb3c785ed698555a3972118a37c458e7accf6ae53f4bb87b3db454a  mesa-25.1.9.tar.xz
-# From https://docs.mesa3d.org/relnotes/23.2.1.html
-sha256  64de0616fc2d801f929ab1ac2a4f16b3e2783c4309a724c8a259b20df8bbc1cc  mesa-23.2.1.tar.xz
+# From https://lists.freedesktop.org/archives/mesa-announce/2026-July/000858.html
+sha256  5296b88a0f1e012e2cb9ada150a2bbadf728ca81e5a4fb2ab43c83a4d2158606  mesa-26.1.6.tar.xz
+sha512  6746b73f5b87e8ff3723eee586b4b5f033dbe6d13cd0309d743b7fa484c350268859ec8ff21aadcbca7a04070cdaa7828146dd28dde4b1935bb879891d687f0b  mesa-26.1.6.tar.xz
 # License
-sha256  a00275a53178e2645fb65be99a785c110513446a5071ff2c698ed260ad917d75  docs/license.rst
+sha256  0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615  docs/license.rst
+sha256  323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f  licenses/MIT
+sha256  686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7  licenses/SGI-B-2.0

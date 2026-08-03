@@ -31,16 +31,44 @@ post_process_unpack "${base_name}" "${output}"
 # Do the Cargo vendoring
 pushd "${base_name}" > /dev/null
 
-# Create the local .cargo/config with vendor info
+# batocera - find the manifest if not in root or defined directory
+real_manifest="${manifest}"
+if [ ! -f "${real_manifest}" ]; then
+    # Look up to 2 levels deep for the manifest
+    found_manifest=$(find . -maxdepth 2 -name "${manifest}" | head -n 1)
+    if [ -n "${found_manifest}" ]; then
+        real_manifest="${found_manifest}"
+        printf 'Note: Found manifest at %s\n' "${real_manifest}" >&2
+    fi
+fi
+
+# Create the local .cargo/config.toml with vendor info
 mkdir -p .cargo/
 mkdir -p "${CARGO_HOME}"
+
+# batocera - Check if Cargo.lock exists relative to the discovered manifest.
+manifest_dir=$(dirname "${real_manifest}")
+if [ ! -f "${manifest_dir}/Cargo.lock" ]; then
+    printf 'Note: Cargo.lock not found, generating one...\n' >&2
+    locked_arg=""
+else
+    locked_arg="--locked"
+fi
+
 flock "${CARGO_HOME}"/.br-lock \
 cargo vendor \
-    --manifest-path "${manifest}" \
-    --locked VENDOR \
-    > .cargo/config
+    --manifest-path "${real_manifest}" \
+    ${locked_arg} VENDOR \
+    > .cargo/config.toml || {
+        printf 'Note: --locked failed or manifest changed, attempting to update lockfile...\n' >&2
+        flock "${CARGO_HOME}"/.br-lock \
+        cargo vendor \
+            --manifest-path "${real_manifest}" \
+            VENDOR \
+            > .cargo/config.toml
+    }
 
-# "cargo vendor' outputs on stderr a message directing to add some data
+# "cargo vendor" outputs on stderr a message directing to add some data
 # to the project's .cargo/config.toml, data that it outputs on stdout.
 # Since we redirect stdout to .cargo/config.toml, the message on stderr
 # gets confusing, so instruct the user that it's been handled.

@@ -3,7 +3,7 @@
 # lzlib
 #
 ################################################################################
-
+# batocera - bump
 LZLIB_VERSION = 0.4.3
 LZLIB_SITE = $(call github,LuaDist,lzlib,$(LZLIB_VERSION))
 LZLIB_DEPENDENCIES = lua zlib

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-OPUS_VERSION = 1.4
+OPUS_VERSION = 1.6.1
 OPUS_SITE = https://downloads.xiph.org/releases/opus
 OPUS_LICENSE = BSD-3-Clause
 OPUS_LICENSE_FILES = COPYING
@@ -41,9 +41,10 @@ ifeq ($(BR2_arm)$(BR2_armeb):$(BR2_ARM_CPU_HAS_ARM),y:)
 OPUS_CONF_OPTS += --disable-asm
 endif
 
-# batocera workaround rk3288 test programs build failure
-ifeq ($(BR2_cortex_a17),y)
-OPUS_CONF_OPTS += --disable-extra-programs
+# We also disable assembly in case we have a soft-float ABI (opus has
+# NEON instructions which are not available in that case).
+ifeq ($(BR2_ARM_SOFT_FLOAT),y)
+OPUS_CONF_OPTS += --disable-intrinsics
 endif
 
 $(eval $(autotools-package))

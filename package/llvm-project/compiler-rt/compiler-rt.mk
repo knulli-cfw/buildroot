@@ -5,22 +5,25 @@
 ################################################################################
 
 COMPILER_RT_VERSION = $(LLVM_PROJECT_VERSION)
-COMPILER_RT_SOURCE = compiler-rt-$(COMPILER_RT_VERSION).src.tar.xz
 COMPILER_RT_SITE = $(LLVM_PROJECT_SITE)
+COMPILER_RT_SOURCE = $(LLVM_PROJECT_SOURCE)
+COMPILER_RT_DL_SUBDIR = llvm-project
 COMPILER_RT_LICENSE = NCSA MIT
 COMPILER_RT_LICENSE_FILES = LICENSE.TXT
 COMPILER_RT_CPE_ID_VENDOR = llvm
 COMPILER_RT_DEPENDENCIES = host-clang libxcrypt llvm
+COMPILER_RT_SUBDIR = compiler-rt
 COMPILER_RT_SUPPORTS_IN_SOURCE_BUILD = NO
 
 COMPILER_RT_INSTALL_STAGING = YES
 COMPILER_RT_INSTALL_TARGET = NO
 
-COMPILER_RT_CONF_OPTS=-DCOMPILER_RT_STANDALONE_BUILD=OFF \
+COMPILER_RT_CONF_OPTS = \
 	-DCOMPILER_RT_STANDALONE_BUILD=ON \
 	-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=$(GNU_TARGET_NAME) \
 	-DLLVM_CONFIG_PATH=$(HOST_DIR)/bin/llvm-config \
-	-DCMAKE_MODULE_PATH=$(HOST_DIR)/lib/cmake/llvm
+	-DCMAKE_MODULE_PATH=$(HOST_DIR)/lib/cmake/llvm \
+	-DLLVM_COMMON_CMAKE_UTILS=$(HOST_DIR)/lib/cmake/llvm
 
 # The installation of the target runtime libraries defaults to DESTDIR, however
 # host-clang resources directory needs a link so Clang can find the runtime
@@ -29,9 +32,9 @@ COMPILER_RT_CONF_OPTS=-DCOMPILER_RT_STANDALONE_BUILD=OFF \
 # assumed, as compiler-rt is usually build at the same time as Clang and not
 # standalone.
 define COMPILER_RT_SETUP_RUNTIME_LIBS
-	mkdir -p $(HOST_DIR)/lib/clang/$(HOST_CLANG_VERSION)/lib
-	ln -sf ../../../../$(GNU_TARGET_NAME)/sysroot/usr/lib/linux $(HOST_DIR)/lib/clang/$(HOST_CLANG_VERSION)/lib/linux
-	ln -sf ../../../../$(GNU_TARGET_NAME)/sysroot/usr/share $(HOST_DIR)/lib/clang/$(HOST_CLANG_VERSION)/share
+	mkdir -p $(HOST_DIR)/lib/clang/$(CLANG_VERSION_MAJOR)/lib
+	ln -sf ../../../../$(GNU_TARGET_NAME)/sysroot/usr/lib/linux $(HOST_DIR)/lib/clang/$(CLANG_VERSION_MAJOR)/lib/linux
+	ln -sf ../../../../$(GNU_TARGET_NAME)/sysroot/usr/share $(HOST_DIR)/lib/clang/$(CLANG_VERSION_MAJOR)/share
 endef
 COMPILER_RT_POST_INSTALL_STAGING_HOOKS += COMPILER_RT_SETUP_RUNTIME_LIBS
 

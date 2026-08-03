@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBIIO_VERSION = 0.25
+LIBIIO_VERSION = 0.26
 LIBIIO_SITE = $(call github,analogdevicesinc,libiio,v$(LIBIIO_VERSION))
 LIBIIO_INSTALL_STAGING = YES
 LIBIIO_LICENSE = LGPL-2.1+
@@ -100,8 +100,8 @@ endif
 
 ifeq ($(BR2_PACKAGE_LIBIIO_IIOD),y)
 define LIBIIO_INSTALL_INIT_SYSV
-	$(INSTALL) -D -m 0755 package/libiio/S99iiod \
-		$(TARGET_DIR)/etc/init.d/S99iiod
+	$(INSTALL) -D -m 0755 package/libiio/S60iiod \
+		$(TARGET_DIR)/etc/init.d/S60iiod
 endef
 endif
 

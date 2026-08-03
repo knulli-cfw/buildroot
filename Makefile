@@ -92,9 +92,9 @@ all:
 .PHONY: all
 
 # Set and export the version string
-export BR2_VERSION := 2024.11
+export BR2_VERSION := 2026.05-git
 # Actual time the release is cut (for reproducible builds)
-BR2_VERSION_EPOCH = 1733653000
+BR2_VERSION_EPOCH = 1772611600
 
 # Save running make version since it's clobbered by the make package
 RUNNING_MAKE_VERSION := $(MAKE_VERSION)
@@ -125,7 +125,8 @@ endif
 noconfig_targets := menuconfig nconfig gconfig xconfig config oldconfig randconfig \
 	defconfig %_defconfig allyesconfig allnoconfig alldefconfig syncconfig release \
 	randpackageconfig allyespackageconfig allnopackageconfig \
-	print-version olddefconfig distclean manual manual-% check-package
+	print-version olddefconfig distclean manual manual-% check-package \
+	check-package-external
 
 # Some global targets do not trigger a build, but are used to collect
 # metadata, or do various checks. When such targets are triggered,
@@ -250,6 +251,13 @@ export LANG = C
 export LC_ALL = C
 endif
 
+# we set a default value here to avoid a Kconfig warning about unset
+# environment varilable. This option is passed as an environment
+# variable to be controlled by autobuilders. The purpose is to test
+# less frequently some uncommon configurations which tend to generate
+# more build failures.
+export BR2_HIDE_SECONDARY_TARGET_OPTIONS ?= n
+
 # To put more focus on warnings, be less verbose as default
 # Use 'make V=1' to see the full commands
 ifeq ("$(origin V)", "command line")
@@ -353,7 +361,7 @@ export HOSTARCH := $(shell LC_ALL=C $(HOSTCC_NOCCACHE) -v 2>&1 | \
 
 # When adding a new host gcc version in Config.in,
 # update the HOSTCC_MAX_VERSION variable:
-HOSTCC_MAX_VERSION := 11
+HOSTCC_MAX_VERSION := 15
 
 HOSTCC_VERSION := $(shell V=$$($(HOSTCC_NOCCACHE) --version | \
 	sed -n -r 's/^.* ([0-9]*)\.([0-9]*)\.([0-9]*)[ ]*.*/\1 \2/p'); \
@@ -407,27 +415,28 @@ ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 # Hide troublesome environment variables from sub processes
 #
 ################################################################################
-unexport CROSS_COMPILE
+unexport AR
 unexport ARCH
 unexport CC
-unexport LD
-unexport AR
-unexport CXX
-unexport CPP
-unexport RANLIB
 unexport CFLAGS
-unexport CXXFLAGS
-unexport GREP_OPTIONS
-unexport TAR_OPTIONS
 unexport CONFIG_SITE
-unexport QMAKESPEC
-unexport TERMINFO
+unexport CPP
+unexport CROSS_COMPILE
+unexport CXX
+unexport CXXFLAGS
+unexport DEVICE_TREE
+unexport GCC_COLORS
+unexport GREP_OPTIONS
+unexport LD
 unexport MACHINE
 unexport O
-unexport GCC_COLORS
-unexport PLATFORM
 unexport OS
-unexport DEVICE_TREE
+unexport PLATFORM
+unexport QMAKESPEC
+unexport RANLIB
+unexport TAR_OPTIONS
+unexport TERMINFO
+unexport TOPDIR
 
 GNU_HOST_NAME := $(shell support/gnuconfig/config.guess)
 
@@ -520,7 +529,7 @@ ifeq ($(BR2_REPRODUCIBLE),y)
 # If SOURCE_DATE_EPOCH has not been set then use the commit date, or the last
 # release date if the source tree is not within a Git repository.
 # See: https://reproducible-builds.org/specs/source-date-epoch/
-BR2_VERSION_GIT_EPOCH := $(shell $(GIT) log -1 --format=%at 2> /dev/null)
+BR2_VERSION_GIT_EPOCH := $(shell $(BR2_GIT) log -1 --format=%at 2> /dev/null)
 export SOURCE_DATE_EPOCH ?= $(or $(BR2_VERSION_GIT_EPOCH),$(BR2_VERSION_EPOCH))
 endif
 
@@ -600,6 +609,16 @@ prepare-sdk: world
 	@$(call MESSAGE,"Preparing the SDK")
 	$(INSTALL) -m 755 $(TOPDIR)/support/misc/relocate-sdk.sh $(HOST_DIR)/relocate-sdk.sh
 	mkdir -p $(HOST_DIR)/share/buildroot
+	(\
+		export LC_ALL=C; \
+		grep -lr '$(HOST_DIR)' '$(HOST_DIR)' | while read -r FILE; do \
+			if file -b --mime-type "$$FILE" | grep -q '^text/' && \
+			   [ "$$FILE" != '$(HOST_DIR)/share/buildroot/sdk-location' ] && \
+			   [ "$$FILE" != '$(HOST_DIR)/share/buildroot/sdk-relocs' ]; then \
+				echo "$$FILE"; \
+			fi; \
+		done \
+	) | sed -e 's|^$(HOST_DIR)|.|g' > $(HOST_DIR)/share/buildroot/sdk-relocs
 	echo $(HOST_DIR) > $(HOST_DIR)/share/buildroot/sdk-location
 
 BR2_SDK_PREFIX ?= $(GNU_TARGET_NAME)_sdk-buildroot
@@ -726,6 +745,7 @@ host-finalize: $(PACKAGES) $(HOST_DIR) $(HOST_DIR_SYMLINK)
 .PHONY: staging-finalize
 staging-finalize: $(STAGING_DIR_SYMLINK)
 
+# batocera - tweak target finalise
 .PHONY: target-finalize
 target-finalize: $(PACKAGES) $(TARGET_DIR) host-finalize
 	@$(call MESSAGE,"Finalizing target directory")
@@ -735,9 +755,10 @@ target-finalize: $(PACKAGES) $(TARGET_DIR) host-finalize
 		$(TARGET_DIR)/usr/lib/pkgconfig $(TARGET_DIR)/usr/share/pkgconfig \
 		$(TARGET_DIR)/usr/lib/cmake $(TARGET_DIR)/usr/share/cmake \
 		$(TARGET_DIR)/usr/lib/rpm $(TARGET_DIR)/usr/doc
-	find $(TARGET_DIR)/usr/{lib,share}/ -name '*.cmake' -print0 | xargs -0 rm -f
+	find $(TARGET_DIR)/usr/{lib,share}/ -name '*.cmake' -print0 | xargs -0 -r rm -f
 	find $(TARGET_DIR)/lib/ $(TARGET_DIR)/usr/lib/ $(TARGET_DIR)/usr/libexec/ \
-		\( -name '*.a' -o -name '*.la' -o -name '*.prl' \) -print0 | xargs -0 rm -f
+		\( -name '*.a' -o -name '*.la' -o -name '*.prl' \) -print0 | xargs -0 -r rm -f
+	find $(TARGET_DIR)/usr/lib/python*/ -name 'test*' -print0 | xargs -0 -r rm -rf
 ifneq ($(BR2_PACKAGE_GDB),y)
 	rm -rf $(TARGET_DIR)/usr/share/gdb
 endif
@@ -785,19 +806,12 @@ endif
 
 # For a merged /usr, ensure that /lib, /bin and /sbin and their /usr
 # counterparts are appropriately setup as symlinks ones to the others.
-ifeq ($(BR2_ROOTFS_MERGED_USR),y)
-
-	$(foreach d, $(call qstrip,$(BR2_ROOTFS_OVERLAY)), \
-		@$(call MESSAGE,"Sanity check in overlay $(d)")$(sep) \
-		$(Q)not_merged_dirs="$$(support/scripts/check-merged-usr.sh $(d))"; \
-		test -n "$$not_merged_dirs" && { \
-			echo "ERROR: The overlay in $(d) is not" \
-				"using a merged /usr for the following directories:" \
-				$$not_merged_dirs; \
-			exit 1; \
-		} || true$(sep))
-
-endif # merged /usr
+	@$(call MESSAGE,"Sanity check in overlays $(call qstrip,$(BR2_ROOTFS_OVERLAY))")
+	support/scripts/check-merged \
+		-t overlay \
+		$(if $(BR2_ROOTFS_MERGED_USR),-u) \
+		$(if $(BR2_ROOTFS_MERGED_BIN),-b) \
+		$(call qstrip,$(BR2_ROOTFS_OVERLAY))
 
 	$(foreach d, $(call qstrip,$(BR2_ROOTFS_OVERLAY)), \
 		@$(call MESSAGE,"Copying overlay $(d)")$(sep) \
@@ -1223,17 +1237,17 @@ help:
 # $(2): br2-external name, empty for bundled
 define list-defconfigs
 	@first=true; \
-	for defconfig in $(1)/configs/*_defconfig; do \
+	for defconfig in $$([ -d $(1)/configs ] && find $(1)/configs -name '*_defconfig' |sort); do \
 		[ -f "$${defconfig}" ] || continue; \
 		if $${first}; then \
 			if [ "$(2)" ]; then \
-				printf 'External configs in "$(call qstrip,$(2))":\n'; \
+				printf 'External configs in "%s":\n' "$(call qstrip,$(2))"; \
 			else \
 				printf "Built-in configs:\n"; \
 			fi; \
 			first=false; \
 		fi; \
-		defconfig="$${defconfig##*/}"; \
+		defconfig="$${defconfig#$(1)/configs/}"; \
 		printf "  %-35s - Build for %s\n" "$${defconfig}" "$${defconfig%_defconfig}"; \
 	done; \
 	$${first} || printf "\n"
@@ -1254,19 +1268,40 @@ release: OUT = buildroot-$(BR2_VERSION)
 # documentation to the git output
 release:
 	git archive --format=tar --prefix=$(OUT)/ HEAD > $(OUT).tar
-	$(MAKE) O=$(OUT) manual-html manual-text manual-pdf
+	SOURCE_DATE_EPOCH=$$(git log -1 --format=%at 2> /dev/null) \
+		$(MAKE) O=$(OUT) manual-html manual-text manual-pdf
 	$(MAKE) O=$(OUT) distclean
-	tar rf $(OUT).tar $(OUT)
-	gzip -9 -c < $(OUT).tar > $(OUT).tar.gz
+	tar rf $(OUT).tar --owner=0 --group=0 \
+		--mtime="$$(git log -1 --pretty=format:%ci)" $(OUT)
+	gzip -9 -n -c < $(OUT).tar > $(OUT).tar.gz
 	xz -9 -c < $(OUT).tar > $(OUT).tar.xz
 	rm -rf $(OUT) $(OUT).tar
 
 print-version:
 	@echo $(BR2_VERSION_FULL)
 
+# $(1): br2-external path
+# $(2): br2-external description
+define check-package-external
+	@$(call MESSAGE,"Checking packages in $(2)")
+	$(Q)if [ -r "$(1)/.checkpackageignore" ]; then \
+		ignore="--ignore-list=$(1)/.checkpackageignore" ; \
+	else \
+		ignore=""; \
+	fi ; \
+	$(TOPDIR)/utils/check-package \
+		--br2-external $${ignore} \
+		`git -C $(1) ls-tree -r --format='$(1)/%(path)' HEAD`
+endef
+
 check-package:
 	$(Q)./utils/check-package `git ls-tree -r --name-only HEAD` \
 		--ignore-list=$(TOPDIR)/.checkpackageignore
+
+check-package-external:
+	$(foreach name,$(BR2_EXTERNAL_NAMES),\
+		$(call check-package-external,$(BR2_EXTERNAL_$(name)_PATH),\
+			$(BR2_EXTERNAL_$(name)_DESC))$(sep))
 
 .PHONY: .checkpackageignore
 .checkpackageignore:

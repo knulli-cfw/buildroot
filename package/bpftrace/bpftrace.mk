@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-BPFTRACE_VERSION = 0.19.1
-BPFTRACE_SITE = $(call github,iovisor,bpftrace,v$(BPFTRACE_VERSION))
+BPFTRACE_VERSION = 0.24.2
+BPFTRACE_SITE = $(call github,bpftrace,bpftrace,v$(BPFTRACE_VERSION))
 BPFTRACE_LICENSE = Apache-2.0
 BPFTRACE_LICENSE_FILES = LICENSE
 BPFTRACE_DEPENDENCIES = \
@@ -15,6 +15,7 @@ BPFTRACE_DEPENDENCIES = \
 	elfutils \
 	host-bison \
 	host-flex \
+	host-vim \
 	libbpf \
 	llvm \
 	xz

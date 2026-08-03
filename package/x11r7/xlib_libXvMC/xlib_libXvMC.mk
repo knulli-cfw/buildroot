@@ -3,10 +3,10 @@
 # xlib_libXvMC
 #
 ################################################################################
-# batocera - bump
+
 XLIB_LIBXVMC_VERSION = 1.0.14
 XLIB_LIBXVMC_SOURCE = libXvMC-$(XLIB_LIBXVMC_VERSION).tar.xz
-XLIB_LIBXVMC_SITE = http://xorg.freedesktop.org/releases/individual/lib
+XLIB_LIBXVMC_SITE = https://xorg.freedesktop.org/archive/individual/lib
 XLIB_LIBXVMC_LICENSE = MIT
 XLIB_LIBXVMC_LICENSE_FILES = COPYING
 XLIB_LIBXVMC_CPE_ID_VENDOR = x.org

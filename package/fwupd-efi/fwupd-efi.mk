@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-FWUPD_EFI_VERSION = 1.6
-FWUPD_EFI_SITE = https://github.com/fwupd/fwupd-efi/releases/download/$(FWUPD_EFI_VERSION)
-FWUPD_EFI_SOURCE = fwupd-efi-$(FWUPD_EFI_VERSION).tar.xz
+FWUPD_EFI_VERSION = 1.8
+FWUPD_EFI_SITE = $(call github,fwupd,fwupd-efi,$(FWUPD_EFI_VERSION))
 FWUPD_EFI_LICENSE = LGPL-2.1+
 FWUPD_EFI_LICENSE_FILES = COPYING
 FWUPD_EFI_INSTALL_STAGING = YES
@@ -23,6 +22,8 @@ FWUPD_EFI_CONF_OPTS = \
 	-Defi_sbat_distro_url=https://gitlab.com/buildroot.org/buildroot/-/tree/master/package/fwupd-efi \
 	-Dgenpeimg=disabled \
 	-Dpython="$(HOST_DIR)/bin/python3"
-FWUPD_EFI_MESON_EXTRA_BINARIES = objcopy='$(TARGET_OBJCOPY)'
+FWUPD_EFI_MESON_EXTRA_BINARIES = \
+	ld.bfd='$(TARGET_LD)' \
+	objcopy='$(TARGET_OBJCOPY)'
 
 $(eval $(meson-package))

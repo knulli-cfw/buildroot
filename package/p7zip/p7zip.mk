@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-P7ZIP_VERSION = 17.05
+P7ZIP_VERSION = 17.06
 P7ZIP_SITE = $(call github,p7zip-project,p7zip,v$(P7ZIP_VERSION))
 P7ZIP_LICENSE = LGPL-2.1+ with unRAR restriction
 P7ZIP_LICENSE_FILES = DOC/License.txt
@@ -41,14 +41,21 @@ define P7ZIP_INSTALL_TARGET_CMDS
 endef
 
 # batocera
+ifeq ($(BR2_PACKAGE_HOST_P7ZIP_7ZA),y)
+HOST_P7ZIP_TARGET = 7za
+else
+HOST_P7ZIP_TARGET = 7zr
+endif
+
+# batocera
 define HOST_P7ZIP_BUILD_CMDS
-        $(HOST_CONFIGURE_OPTS) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) $(P7ZIP_TARGET)
+        $(HOST_CONFIGURE_OPTS) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) $(HOST_P7ZIP_TARGET)
 endef
 
 # batocera
 define HOST_P7ZIP_INSTALL_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/bin/$(P7ZIP_TARGET) \
-		$(HOST_DIR)/usr/bin/$(P7ZIP_TARGET)
+	$(INSTALL) -D -m 0755 $(@D)/bin/$(HOST_P7ZIP_TARGET) \
+		$(HOST_DIR)/usr/bin/$(HOST_P7ZIP_TARGET)
 endef
 
 $(eval $(generic-package))

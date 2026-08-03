@@ -2,6 +2,9 @@
 
 DAEMON="syslog-ng"
 PIDFILE="/var/run/$DAEMON.pid"
+# batocera - make log folder if necessary
+mkdir -p /var
+mkdir -p /var/log
 
 SYSLOG_NG_ARGS=""
 

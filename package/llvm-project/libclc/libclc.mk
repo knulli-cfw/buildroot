@@ -3,15 +3,16 @@
 # libclc
 #
 ################################################################################
-# batocera - remove 0001-support-out-of-tree-build.patch
+
 LIBCLC_VERSION = $(LLVM_PROJECT_VERSION)
 LIBCLC_SITE = $(LLVM_PROJECT_SITE)
-LIBCLC_SOURCE = libclc-$(LIBCLC_VERSION).src.tar.xz
+LIBCLC_SOURCE = $(LLVM_PROJECT_SOURCE)
+LIBCLC_DL_SUBDIR = llvm-project
 LIBCLC_LICENSE = Apache-2.0 with exceptions or MIT
 LIBCLC_LICENSE_FILES = LICENSE.TXT
+LIBCLC_SUBDIR= libclc
 
 LIBCLC_DEPENDENCIES = host-clang host-llvm host-spirv-llvm-translator
-# batocera - add host package for host-mesa3d
 HOST_LIBCLC_DEPENDENCIES = host-clang host-llvm host-spirv-llvm-translator
 LIBCLC_INSTALL_STAGING = YES
 
@@ -28,8 +29,6 @@ LIBCLC_CONF_OPTS = \
 	-DCMAKE_SYSROOT="" \
 	-DCMAKE_C_COMPILER_FORCED=ON \
 	-DCMAKE_CXX_COMPILER_FORCED=ON \
-	-DCMAKE_CLC_COMPILER_FORCED=ON \
-	-DCMAKE_LLAsm_COMPILER_FORCED=ON \
 	-DCMAKE_INSTALL_DATADIR="share" \
 	-DCMAKE_FIND_ROOT_PATH="$(HOST_DIR)" \
 	-DCMAKE_C_FLAGS="$(HOST_CFLAGS)" \
@@ -39,13 +38,11 @@ LIBCLC_CONF_OPTS = \
 	-DCMAKE_MODULE_LINKER_FLAGS="$(HOST_LDFLAGS)" \
 	-DCMAKE_C_COMPILER="$(CMAKE_HOST_C_COMPILER)" \
 	-DCMAKE_CXX_COMPILER="$(CMAKE_HOST_CXX_COMPILER)" \
-	-DLLVM_CONFIG="$(HOST_DIR)/bin/llvm-config"
+	-DLLVM_CMAKE_DIR="$(HOST_DIR)/lib/cmake/llvm" \
+	-DLIBCLC_CUSTOM_LLVM_TOOLS_BINARY_DIR="$(HOST_DIR)/bin"
 
-ifeq ($(BR2_arm)$(BR2_aarch64),y)
-HOST_LIBCLC_CONF_OPTS += -DLIBCLC_TARGETS_TO_BUILD=""
-LIBCLC_CONF_OPTS += -DLIBCLC_TARGETS_TO_BUILD=""
-endif
+HOST_LIBCLC_CONF_OPTS = \
+	-DLIBCLC_TARGETS_TO_BUILD=spirv64-mesa3d-
 
 $(eval $(cmake-package))
-# batocera - add host package for host-mesa3d
 $(eval $(host-cmake-package))

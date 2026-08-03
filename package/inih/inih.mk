@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-INIH_VERSION = 58
+INIH_VERSION = 62
 INIH_SITE = $(call github,benhoyt,inih,r$(INIH_VERSION))
 INIH_INSTALL_STAGING = YES
 INIH_LICENSE = BSD-3-Clause
@@ -18,3 +18,4 @@ INIH_CONF_OPTS += -Dwith_INIReader=false
 endif
 
 $(eval $(meson-package))
+$(eval $(host-meson-package))

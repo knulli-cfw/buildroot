@@ -6,11 +6,13 @@
 
 LLVM_VERSION = $(LLVM_PROJECT_VERSION)
 LLVM_SITE = $(LLVM_PROJECT_SITE)
-LLVM_SOURCE = llvm-$(LLVM_VERSION).src.tar.xz
+LLVM_SOURCE = $(LLVM_PROJECT_SOURCE)
+LLVM_DL_SUBDIR = llvm-project
 LLVM_LICENSE = Apache-2.0 with exceptions
 LLVM_LICENSE_FILES = LICENSE.TXT
 LLVM_CPE_ID_VENDOR = llvm
 LLVM_SUPPORTS_IN_SOURCE_BUILD = NO
+LLVM_SUBDIR = llvm
 LLVM_INSTALL_STAGING = YES
 
 HOST_LLVM_DEPENDENCIES = host-python3 host-llvm-cmake
@@ -18,15 +20,20 @@ LLVM_DEPENDENCIES = host-llvm
 
 # Path to cmake modules from host-llvm-cmake
 HOST_LLVM_CONF_OPTS += -DCMAKE_MODULE_PATH=$(HOST_DIR)/lib/cmake/llvm
-# batocera add LLVM_COMMON_CMAKE_UTILS
-HOST_LLVM_CONF_OPTS += -DLLVM_COMMON_CMAKE_UTILS=$(HOST_DIR)/lib/cmake/llvm
 LLVM_CONF_OPTS += -DCMAKE_MODULE_PATH=$(HOST_DIR)/lib/cmake/llvm
+
+HOST_LLVM_CONF_OPTS += -DLLVM_COMMON_CMAKE_UTILS=$(HOST_DIR)/lib/cmake/llvm
 LLVM_CONF_OPTS += -DLLVM_COMMON_CMAKE_UTILS=$(HOST_DIR)/lib/cmake/llvm
 
 # Don't build clang libcxx libcxxabi lldb compiler-rt lld polly as llvm subprojects
 # This flag assumes that projects are checked out side-by-side and not nested
 HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_PROJECTS=""
 LLVM_CONF_OPTS += -DLLVM_ENABLE_PROJECTS=""
+
+# LLVM_ENABLE_RUNTIMES for runtime components libcxx etc
+
+HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_RUNTIMES=""
+LLVM_CONF_OPTS += -DLLVM_ENABLE_RUNTIMES=""
 
 HOST_LLVM_CONF_OPTS += -DLLVM_CCACHE_BUILD=$(if $(BR2_CCACHE),ON,OFF)
 LLVM_CONF_OPTS += -DLLVM_CCACHE_BUILD=$(if $(BR2_CCACHE),ON,OFF)
@@ -126,11 +133,6 @@ LLVM_CONF_OPTS += -DENABLE_CRASH_OVERRIDES=ON
 HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_FFI=OFF
 LLVM_CONF_OPTS += -DLLVM_ENABLE_FFI=OFF
 
-# Disable terminfo database (needs ncurses libtinfo.so)
-# Batocera - no longer a valid option
-#HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
-#LLVM_CONF_OPTS += -DLLVM_ENABLE_TERMINFO=OFF
-
 # Enable thread support
 HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_THREADS=ON
 LLVM_CONF_OPTS += -DLLVM_ENABLE_THREADS=ON
@@ -154,6 +156,10 @@ LLVM_CONF_OPTS += -DLLVM_ENABLE_Z3_SOLVER=OFF
 # We don't use llvm for static only build, so enable PIC
 HOST_LLVM_CONF_OPTS += -DLLVM_ENABLE_PIC=ON
 LLVM_CONF_OPTS += -DLLVM_ENABLE_PIC=ON
+
+# Disable TFTLite integration
+HOST_LLVM_CONF_OPTS += -DLLVM_HAVE_TFLITE=""
+LLVM_CONF_OPTS += -DLLVM_HAVE_TFLITE=""
 
 # Default is Debug build, which requires considerably more disk space and
 # build time. Release build is selected for host and target because the linker
@@ -256,8 +262,6 @@ LLVM_CONF_OPTS += \
 	-DLLVM_ENABLE_PEDANTIC=ON \
 	-DLLVM_ENABLE_WERROR=OFF
 
-
-# batocera - remove LLVM_INCLUDE_GO_TESTS - not a valid option
 HOST_LLVM_CONF_OPTS += \
 	-DLLVM_BUILD_EXAMPLES=OFF \
 	-DLLVM_BUILD_DOCS=OFF \
@@ -269,24 +273,6 @@ HOST_LLVM_CONF_OPTS += \
 	-DLLVM_INCLUDE_DOCS=OFF \
 	-DLLVM_INCLUDE_TESTS=OFF \
 	-DLLVM_INCLUDE_BENCHMARKS=OFF
-
-# batocera - add perf & LLVMgold plugin options
-HOST_LLVM_CONF_OPTS += -DLLVM_USE_PERF=ON
-ifeq ($(BR2_arm),y)
-HOST_LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnueabihf/$(GCC_VERSION)/plugin/include
-else
-HOST_LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnu/$(GCC_VERSION)/plugin/include
-endif
-HOST_LLVM_DEPENDENCIES += host-gcc-final
-
-ifeq ($(BR2_x86_64),y)
-HOST_LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=ON
-else
-HOST_LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=OFF
-endif
-
-# batocera - add perf & LLVMgold plugin option
-# remove LLVM_INCLUDE_GO_TESTS - not a valid option
 LLVM_CONF_OPTS += \
 	-DLLVM_BUILD_EXAMPLES=OFF \
 	-DLLVM_BUILD_DOCS=OFF \
@@ -297,20 +283,26 @@ LLVM_CONF_OPTS += \
 	-DLLVM_INCLUDE_EXAMPLES=OFF \
 	-DLLVM_INCLUDE_DOCS=OFF \
 	-DLLVM_INCLUDE_TESTS=OFF \
-	-DLLVM_INCLUDE_BENCHMARKS=OFF \
-	-DLLVM_USE_PERF=ON
+	-DLLVM_INCLUDE_BENCHMARKS=OFF
 
-ifeq ($(BR2_arm),y)
-LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnueabihf/$(GCC_VERSION)/plugin/include
+# batocera - Required for RPCS3
+ifeq ($(BR2_PACKAGE_LLVM_INTEL_JITEVENTS),y)
+HOST_LLVM_CONF_OPTS += \
+    -DLLVM_USE_INTEL_JITEVENTS=ON
+LLVM_CONF_OPTS += \
+    -DLLVM_USE_INTEL_JITEVENTS=ON
 else
-LLVM_CONF_OPTS += -DLLVM_BINUTILS_INCDIR=$(HOST_DIR)/lib/gcc/$(ARCH)-buildroot-linux-gnu/$(GCC_VERSION)/plugin/include
+HOST_LLVM_CONF_OPTS += \
+    -DLLVM_USE_INTEL_JITEVENTS=OFF
+LLVM_CONF_OPTS += \
+    -DLLVM_USE_INTEL_JITEVENTS=OFF
 endif
 
-ifeq ($(BR2_x86_64),y)
-LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=ON
-else
-LLVM_CONF_OPTS += -DLLVM_USE_INTEL_JITEVENTS=OFF
-endif
+# batocera - Add LLVM_USE_PERF for RPCS3
+HOST_LLVM_CONF_OPTS += \
+    -DLLVM_USE_PERF=ON
+LLVM_CONF_OPTS += \
+    -DLLVM_USE_PERF=ON
 
 # Copy llvm-config (host variant) to STAGING_DIR
 # llvm-config (host variant) returns include and lib directories

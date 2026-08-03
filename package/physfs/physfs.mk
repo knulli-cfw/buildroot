@@ -3,10 +3,10 @@
 # physfs
 #
 ################################################################################
-# batocera - update package version
-PHYSFS_VERSION = release-3.2.0
-PHYSFS_SOURCE = $(PHYSFS_VERSION).tar.gz
-PHYSFS_SITE = https://github.com/icculus/physfs/archive/refs/tags
+
+PHYSFS_VERSION = 3.2.0
+PHYSFS_SITE = $(call github,icculus,physfs,release-$(PHYSFS_VERSION))
+
 PHYSFS_LICENSE = Zlib
 PHYSFS_LICENSE_FILES = LICENSE.txt
 

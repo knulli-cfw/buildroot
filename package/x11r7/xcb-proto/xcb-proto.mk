@@ -3,7 +3,7 @@
 # xcb-proto
 #
 ################################################################################
-# batocera - update
+
 XCB_PROTO_VERSION = 1.17.0
 XCB_PROTO_SOURCE = xcb-proto-$(XCB_PROTO_VERSION).tar.xz
 XCB_PROTO_SITE = https://xorg.freedesktop.org/archive/individual/proto

@@ -3,17 +3,18 @@
 # xwayland
 #
 ################################################################################
-# batocera bump - security fix
-XWAYLAND_VERSION = 24.1.6
+
+XWAYLAND_VERSION = 24.1.13
 XWAYLAND_SOURCE = xwayland-$(XWAYLAND_VERSION).tar.xz
 XWAYLAND_SITE = https://xorg.freedesktop.org/archive/individual/xserver
 XWAYLAND_LICENSE = MIT
 XWAYLAND_LICENSE_FILES = COPYING
 XWAYLAND_CPE_ID_VENDOR = x.org
 XWAYLAND_INSTALL_STAGING = YES
-
+# batocera - add mesa3d
 XWAYLAND_DEPENDENCIES = \
 	libdrm \
+	mesa3d \
 	pixman \
 	wayland \
 	wayland-protocols \
@@ -24,15 +25,6 @@ XWAYLAND_DEPENDENCIES = \
 	xlib_libxshmfence \
 	xlib_xtrans \
 	xorgproto
-
-# batocera - add mesa3d-rpi4 / mesa3d
-ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_BCM2711),y)
-XWAYLAND_DEPENDENCIES += mesa3d-rpi4
-else
-XWAYLAND_DEPENDENCIES += mesa3d
-endif
-
-# batocera - remove the -Dxwayland_eglstream=false option
 XWAYLAND_CONF_OPTS = \
 	-Ddri3=true \
 	-Dxvfb=false \
@@ -40,7 +32,7 @@ XWAYLAND_CONF_OPTS = \
 	-Ddtrace=false \
 	-Ddocs=false
 
-ifeq ($(BR2_PACKAGE_LIBEPOXY),y)
+ifeq ($(BR2_PACKAGE_HAS_LIBEGL)$(BR2_PACKAGE_LIBEPOXY),yy)
 XWAYLAND_CONF_OPTS += -Dglamor=true
 XWAYLAND_DEPENDENCIES += libepoxy
 else
@@ -79,15 +71,22 @@ else
 XWAYLAND_CONF_OPTS += -Dxselinux=false
 endif
 
-ifeq ($(BR2_PACKAGE_OPENSSL),y)
-XWAYLAND_CONF_OPTS += -Dsha1=libcrypto
-XWAYLAND_DEPENDENCIES += openssl
+# The order of the preferred SHA1 libraries should match used by meson.build.
+ifeq ($(BR2_PACKAGE_LIBMD),y)
+XWAYLAND_CONF_OPTS += -Dsha1=libmd
+XWAYLAND_DEPENDENCIES += libmd
+else ifeq ($(BR2_PACKAGE_LIBSHA1),y)
+XWAYLAND_CONF_OPTS += -Dsha1=libsha1
+XWAYLAND_DEPENDENCIES += libsha1
+else ifeq ($(BR2_PACKAGE_NETTLE),y)
+XWAYLAND_CONF_OPTS += -Dsha1=libnettle
+XWAYLAND_DEPENDENCIES += nettle
 else ifeq ($(BR2_PACKAGE_LIBGCRYPT),y)
 XWAYLAND_CONF_OPTS += -Dsha1=libgcrypt
 XWAYLAND_DEPENDENCIES += libgcrypt
 else
-XWAYLAND_CONF_OPTS += -Dsha1=libsha1
-XWAYLAND_DEPENDENCIES += libsha1
+XWAYLAND_CONF_OPTS += -Dsha1=libcrypto
+XWAYLAND_DEPENDENCIES += openssl
 endif
 
 ifeq ($(BR2_PACKAGE_LIBUNWIND),y)
@@ -109,6 +108,5 @@ endif
 ifeq ($(BR2_PACKAGE_XAPP_XKBCOMP),y)
 XWAYLAND_DEPENDENCIES += xapp_xkbcomp
 endif
-
 
 $(eval $(meson-package))

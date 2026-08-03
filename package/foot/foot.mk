@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-FOOT_VERSION = 1.16.2
+FOOT_VERSION = 1.26.0
 FOOT_SITE = https://codeberg.org/dnkl/foot.git
 FOOT_SITE_METHOD = git
 FOOT_LICENSE = MIT

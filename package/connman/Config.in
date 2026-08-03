@@ -13,7 +13,7 @@ config BR2_PACKAGE_CONNMAN
 	  for managing internet connections within embedded devices
 	  running the Linux operating system.
 
-	  https://01.org/connman
+	  https://git.kernel.org/pub/scm/network/connman/connman.git
 
 if BR2_PACKAGE_CONNMAN
 
@@ -45,9 +45,8 @@ config BR2_PACKAGE_CONNMAN_ETHERNET
 
 config BR2_PACKAGE_CONNMAN_WIFI
 	bool "enable WiFi support"
-	# batocera
-	depends on BR2_PACKAGE_WPA_SUPPLICANT      || BR2_PACKAGE_WPA_SUPPLICANT_K44      # runtime
-	depends on BR2_PACKAGE_WPA_SUPPLICANT_DBUS || BR2_PACKAGE_WPA_SUPPLICANT_K44_DBUS # runtime
+	select BR2_PACKAGE_WPA_SUPPLICANT # runtime
+	select BR2_PACKAGE_WPA_SUPPLICANT_DBUS # runtime
 	help
 	  Enable WiFi support (scan and static/dhcp interface
 	  setup). ConnMan detects the start of wpa_supplicant
