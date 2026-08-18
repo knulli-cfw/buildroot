@@ -1,10 +1,17 @@
 config BR2_PACKAGE_PYTHON_EVDEV
 	bool "python-evdev"
-	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_4_4
+	# 4.4 was the version that split input-event-codes.h out of input.h, but
+	# since 1.9.x setup.py drops header paths that do not exist (and the
+	# generated ecodes.c only includes input.h/uinput.h), so the split is not
+	# required.  Everything the C extensions use unconditionally --
+	# UI_SET_PROPBIT, INPUT_PROP_*, EVIOCGPROP -- predates 3.0; UI_GET_SYSNAME,
+	# UI_DEV_SETUP and UI_ABS_SETUP are all #ifdef-guarded with a fallback.
+	# Needed for the knulli r16 target, whose Allwinner R16 BSP kernel is 3.4.
+	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_0
 	help
 	  Bindings to the Linux input handling subsystem.
 
 	  https://github.com/gvalkov/python-evdev
 
-comment "python-evdev needs a toolchain w/ headers >= 4.4"
-	depends on !BR2_TOOLCHAIN_HEADERS_AT_LEAST_4_4
+comment "python-evdev needs a toolchain w/ headers >= 3.0"
+	depends on !BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_0

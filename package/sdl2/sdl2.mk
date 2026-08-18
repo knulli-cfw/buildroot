@@ -221,9 +221,14 @@ SDL2_DEPENDENCIES += libdecor
 endif
 
 # batocera - enable/disable Vulkan support
-ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER)$(BR2_PACKAGE_VULKAN_LOADER),yy)
-SDL2_DEPENDENCIES += mesa3d vulkan-loader
+# knulli - the loader is the whole build-time requirement; which ICD serves it
+# is a runtime matter, so boards on a vendor blob qualify too.
+ifeq ($(BR2_PACKAGE_VULKAN_LOADER),y)
+SDL2_DEPENDENCIES += vulkan-loader
 SDL2_CONF_OPTS += --enable-video-vulkan
+ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER),y)
+SDL2_DEPENDENCIES += mesa3d
+endif
 else
 SDL2_CONF_OPTS += --disable-video-vulkan
 endif

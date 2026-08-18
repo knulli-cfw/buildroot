@@ -187,12 +187,8 @@ else
 VLC_CONF_OPTS += --disable-freerdp
 endif
 
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BASE),y)
-VLC_CONF_OPTS += --enable-gst-decode
-VLC_DEPENDENCIES += gst1-plugins-base
-else
+# gst-decode: vlc 3.0's module does not build against gstreamer 1.28
 VLC_CONF_OPTS += --disable-gst-decode
-endif
 
 ifeq ($(BR2_PACKAGE_HAS_LIBGL),y)
 VLC_DEPENDENCIES += libgl
